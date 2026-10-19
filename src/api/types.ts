@@ -19,6 +19,7 @@ export type Match = {
     organizerId: number | null;
     organizerUsername: string | null;
     participantsCount: number;
+    participantIds: number[];
 };
 
 export type Venue = {
