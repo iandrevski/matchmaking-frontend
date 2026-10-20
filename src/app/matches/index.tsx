@@ -7,31 +7,7 @@ import type { Match } from '@/api/types';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import {BottomTabInset, MaxContentWidth, Spacing, TopTabInset} from '@/constants/theme';
-
-function formatDate(iso: string) {
-    return new Date(iso).toLocaleString(undefined, {
-        weekday: 'short',
-        day: 'numeric',
-        month: 'short',
-        hour: '2-digit',
-        minute: '2-digit',
-    });
-}
-
-function MatchCard({ match }: { match: Match }) {
-    return (
-        <ThemedView type="backgroundElement" style={styles.card}>
-            <ThemedText type="smallBold">{match.sport.name}</ThemedText>
-            <ThemedText>{match.venueName}</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-                {formatDate(match.dateFrom)}
-            </ThemedText>
-            <ThemedText type="small">
-                {match.participantsCount}/{match.sport.numberOfPlayers} players · {match.status}
-            </ThemedText>
-        </ThemedView>
-    );
-}
+import { MatchCard } from '@/components/match-card';
 
 export default function MatchesScreen() {
     const [matches, setMatches] = useState<Match[]>([]);
