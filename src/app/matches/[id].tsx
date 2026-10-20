@@ -8,16 +8,7 @@ import type { Match } from '@/api/types';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
-
-function formatDate(iso: string) {
-    return new Date(iso).toLocaleString(undefined, {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        hour: '2-digit',
-        minute: '2-digit',
-    });
-}
+import { formatMatchDate } from '@/utils/format';
 
 export default function MatchDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
@@ -79,8 +70,7 @@ export default function MatchDetailsScreen() {
 
                 <ThemedView type="backgroundElement" style={styles.card}>
                     <Row label="Venue" value={match.venueName} />
-                    <Row label="When" value={formatDate(match.dateFrom)} />
-                    <Row label="Organizer" value={match.organizerUsername ?? '—'} />
+                    <Row label="When" value={formatMatchDate(match.dateFrom, 'long')} />                    <Row label="Organizer" value={match.organizerUsername ?? '—'} />
                     <Row
                         label="Players"
                         value={`${match.participantsCount}/${match.sport.numberOfPlayers}`}
