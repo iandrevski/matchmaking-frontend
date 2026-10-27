@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useFocusEffect } from 'expo-router';
+import { Link, useFocusEffect, useLocalSearchParams} from 'expo-router';
 import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getMatches, getSports } from '@/api/client';
@@ -11,6 +11,8 @@ import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
 
 export default function MatchesScreen() {
+    const params = useLocalSearchParams<{ sportId?: string }>();
+
     const [matches, setMatches] = useState<Match[]>([]);
     const [sports, setSports] = useState<Sport[]>([]);
     const [selectedSportId, setSelectedSportId] = useState<number | null>(null);
@@ -31,6 +33,12 @@ export default function MatchesScreen() {
     useEffect(() => {
         getSports().then(setSports).catch(() => {});
     }, []);
+
+    useEffect(() => {
+        if (params.sportId) {
+            setSelectedSportId(Number(params.sportId));
+        }
+    }, [params.sportId]);
 
     // натпреварите се вчитуваат секој пат кога екранот станува активен или се менува филтерот
     useFocusEffect(
