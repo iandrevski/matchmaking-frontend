@@ -1,4 +1,4 @@
-import type { ApiError, Match, Sport, Venue } from './types';
+import type {ApiError, Match, MatchStatus, Sport, Venue} from './types';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -47,7 +47,19 @@ export const getVenues = () => apiFetch<Venue[]>('/venues');
 export const getVenue = (id: number) => apiFetch<Venue>(`/venues/${id}`);
 
 // ---------- Matches ----------
-export const getMatches = () => apiFetch<Match[]>('/matches');
+export type MatchFilters = {
+    sportId?: number | null;
+    status?: MatchStatus | null;
+};
+
+export const getMatches = (filters: MatchFilters = {}) => {
+    const params = new URLSearchParams();
+    if (filters.sportId) params.append('sportId', String(filters.sportId));
+    if (filters.status) params.append('status', filters.status);
+    const query = params.toString();
+    return apiFetch<Match[]>(`/matches${query ? `?${query}` : ''}`);
+};
+
 export const getOpenMatches = () => apiFetch<Match[]>('/matches?status=OPEN');
 export const getMatch = (id: number) => apiFetch<Match>(`/matches/${id}`);
 

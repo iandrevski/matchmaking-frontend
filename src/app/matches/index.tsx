@@ -1,16 +1,20 @@
+import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { getMatches } from '@/api/client';
-import type { Match } from '@/api/types';
+import { getMatches, getSports } from '@/api/client';
+import type { Match, Sport } from '@/api/types';
+import { MatchCard } from '@/components/match-card';
+import { SportFilter } from '@/components/sport-filter';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import {BottomTabInset, MaxContentWidth, Spacing, TopTabInset} from '@/constants/theme';
-import { MatchCard } from '@/components/match-card';
+import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
 
 export default function MatchesScreen() {
     const [matches, setMatches] = useState<Match[]>([]);
+    const [sports, setSports] = useState<Sport[]>([]);
+    const [selectedSportId, setSelectedSportId] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -18,15 +22,23 @@ export default function MatchesScreen() {
     const loadMatches = useCallback(async () => {
         try {
             setError(null);
-            setMatches(await getMatches());
+            setMatches(await getMatches({ sportId: selectedSportId }));
         } catch (e) {
             setError(e instanceof Error ? e.message : 'Something went wrong');
         }
+    }, [selectedSportId]);
+
+    // спортовите се вчитуваат еднаш
+    useEffect(() => {
+        getSports().then(setSports).catch(() => {});
     }, []);
 
-    useEffect(() => {
-        loadMatches().finally(() => setLoading(false));
-    }, [loadMatches]);
+    // натпреварите се вчитуваат секој пат кога екранот станува активен или се менува филтерот
+    useFocusEffect(
+        useCallback(() => {
+            loadMatches().finally(() => setLoading(false));
+        }, [loadMatches]),
+    );
 
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
@@ -38,6 +50,8 @@ export default function MatchesScreen() {
         <ThemedView style={styles.container}>
             <SafeAreaView style={styles.safeArea}>
                 <ThemedText type="subtitle">Matches</ThemedText>
+
+                <SportFilter sports={sports} selectedId={selectedSportId} onSelect={setSelectedSportId} />
 
                 {error && <ThemedText style={styles.error}>{error}</ThemedText>}
 
@@ -52,7 +66,9 @@ export default function MatchesScreen() {
                         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
                         ListEmptyComponent={
                             !error ? (
-                                <ThemedText themeColor="textSecondary">No matches yet.</ThemedText>
+                                <ThemedText themeColor="textSecondary">
+                                    {selectedSportId ? 'No matches for this sport yet.' : 'No matches yet.'}
+                                </ThemedText>
                             ) : null
                         }
                     />
@@ -78,11 +94,6 @@ const styles = StyleSheet.create({
     list: {
         gap: Spacing.three,
         paddingBottom: BottomTabInset + Spacing.three,
-    },
-    card: {
-        padding: Spacing.three,
-        borderRadius: Spacing.three,
-        gap: Spacing.one,
     },
     loader: {
         marginTop: Spacing.five,
