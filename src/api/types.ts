@@ -42,3 +42,10 @@ export type ApiError = {
     fieldErrors: Record<string, string>;
     timestamp: string;
 };
+
+export type CreateMatchRequest = {
+    dateFrom: string; // локално време без Z, пр. "2026-10-21T18:00:00"
+    dateTo: string;
+    sportId: number;
+    venueId: number;
+};

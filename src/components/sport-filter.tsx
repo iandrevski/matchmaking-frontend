@@ -1,8 +1,7 @@
-import { Pressable, ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 
 import type { Sport } from '@/api/types';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { Chip } from '@/components/chip';
 import { Spacing } from '@/constants/theme';
 import { sportEmoji } from '@/utils/sports';
 
@@ -10,16 +9,17 @@ type Props = {
     sports: Sport[];
     selectedId: number | null;
     onSelect: (sportId: number | null) => void;
+    showAll?: boolean;
 };
 
-export function SportFilter({ sports, selectedId, onSelect }: Props) {
+export function SportFilter({ sports, selectedId, onSelect, showAll = true }: Props) {
     return (
         <ScrollView
             horizontal
             style={styles.scroll}
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.row}>
-            <Chip label="All" selected={selectedId === null} onPress={() => onSelect(null)} />
+            {showAll && <Chip label="All" selected={selectedId === null} onPress={() => onSelect(null)} />}
             {sports.map((sport) => (
                 <Chip
                     key={sport.id}
@@ -32,18 +32,6 @@ export function SportFilter({ sports, selectedId, onSelect }: Props) {
     );
 }
 
-function Chip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
-    return (
-        <Pressable onPress={onPress} style={({ pressed }) => pressed && styles.pressed}>
-            <ThemedView
-                type={selected ? 'backgroundSelected' : 'backgroundElement'}
-                style={[styles.chip, selected && styles.chipSelected]}>
-                <ThemedText type={selected ? 'smallBold' : 'small'}>{label}</ThemedText>
-            </ThemedView>
-        </Pressable>
-    );
-}
-
 const styles = StyleSheet.create({
     scroll: {
         flexGrow: 0,
@@ -51,18 +39,5 @@ const styles = StyleSheet.create({
     row: {
         gap: Spacing.two,
         paddingVertical: Spacing.one,
-    },
-    chip: {
-        paddingHorizontal: Spacing.three,
-        paddingVertical: Spacing.two,
-        borderRadius: Spacing.four,
-        borderWidth: 1,
-        borderColor: 'transparent',
-    },
-    chipSelected: {
-        borderColor: '#3c87f7',
-    },
-    pressed: {
-        opacity: 0.7,
     },
 });
