@@ -1,7 +1,6 @@
-import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Link, useFocusEffect } from 'expo-router';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getMatches, getSports } from '@/api/client';
 import type { Match, Sport } from '@/api/types';
@@ -49,8 +48,16 @@ export default function MatchesScreen() {
     return (
         <ThemedView style={styles.container}>
             <SafeAreaView style={styles.safeArea}>
-                <ThemedText type="subtitle">Matches</ThemedText>
-
+                <View style={styles.header}>
+                    <ThemedText type="subtitle">Matches</ThemedText>
+                    <Link href="/matches/new" asChild>
+                        <Pressable style={({ pressed }) => [styles.newButton, pressed && styles.pressed]}>
+                            <ThemedText type="smallBold" style={styles.newButtonText}>
+                                + New
+                            </ThemedText>
+                        </Pressable>
+                    </Link>
+                </View>
                 <SportFilter sports={sports} selectedId={selectedSportId} onSelect={setSelectedSportId} />
 
                 {error && <ThemedText style={styles.error}>{error}</ThemedText>}
@@ -100,5 +107,22 @@ const styles = StyleSheet.create({
     },
     error: {
         color: '#e5484d',
+    },
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    newButton: {
+        backgroundColor: '#3c87f7',
+        paddingHorizontal: Spacing.three,
+        paddingVertical: Spacing.two,
+        borderRadius: Spacing.three,
+    },
+    newButtonText: {
+        color: '#ffffff',
+    },
+    pressed: {
+        opacity: 0.8,
     },
 });

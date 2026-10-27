@@ -1,4 +1,5 @@
 import type {ApiError, Match, MatchStatus, Sport, Venue} from './types';
+import {CreateMatchRequest } from "./types";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -43,8 +44,8 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
 export const getSports = () => apiFetch<Sport[]>('/sports');
 
 // ---------- Venues ----------
-export const getVenues = () => apiFetch<Venue[]>('/venues');
-export const getVenue = (id: number) => apiFetch<Venue>(`/venues/${id}`);
+export const getVenues = (sportId?: number) =>
+    apiFetch<Venue[]>(`/venues${sportId ? `?sportId=${sportId}` : ''}`);export const getVenue = (id: number) => apiFetch<Venue>(`/venues/${id}`);
 
 // ---------- Matches ----------
 export type MatchFilters = {
@@ -69,3 +70,10 @@ export const joinMatch = (matchId: number, playerId: number) =>
 
 export const leaveMatch = (matchId: number, playerId: number) =>
     apiFetch<Match>(`/matches/${matchId}/leave?playerId=${playerId}`, { method: 'POST' });
+
+// TODO (auth): organizerId ќе доаѓа од токенот
+export const createMatch = (organizerId: number, body: CreateMatchRequest) =>
+    apiFetch<Match>(`/matches?organizerId=${organizerId}`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+    });
