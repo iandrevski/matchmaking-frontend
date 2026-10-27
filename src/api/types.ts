@@ -49,3 +49,14 @@ export type CreateMatchRequest = {
     sportId: number;
     venueId: number;
 };
+
+export type Player = {
+    id: number;
+    username: string;
+    email: string;
+    age: number | null;
+    height: number | null;
+    weight: number | null;
+    homeLat: number | null;
+    homeLong: number | null;
+};

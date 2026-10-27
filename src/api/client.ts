@@ -1,5 +1,5 @@
 import type {ApiError, Match, MatchStatus, Sport, Venue} from './types';
-import {CreateMatchRequest } from "./types";
+import {CreateMatchRequest, Player } from "./types";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -77,3 +77,8 @@ export const createMatch = (organizerId: number, body: CreateMatchRequest) =>
         method: 'POST',
         body: JSON.stringify(body),
     });
+
+// ---------- Players ----------
+export const getPlayer = (id: number) => apiFetch<Player>(`/players/${id}`);
+export const getPlayerMatches = (playerId: number) =>
+    apiFetch<Match[]>(`/matches/player/${playerId}`);
