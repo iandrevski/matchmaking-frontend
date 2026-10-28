@@ -10,11 +10,12 @@ import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
 import { formatMatchDate } from '@/utils/format';
 
+import { useAuth } from '@/auth/auth-context';
+
 export default function MatchDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const matchId = Number(id);
-    const CURRENT_PLAYER_ID = 3;
-
+    const { user } = useAuth();
 
     const [match, setMatch] = useState<Match | null>(null);
     const [loading, setLoading] = useState(true);
@@ -30,11 +31,11 @@ export default function MatchDetailsScreen() {
 
     // join or leave → the backend returns the updated match
     const runAction = useCallback(
-        async (action: (matchId: number, playerId: number) => Promise<Match>) => {
+        async (action: (matchId: number) => Promise<Match>) => {
             setSubmitting(true);
             setError(null);
             try {
-                setMatch(await action(matchId, CURRENT_PLAYER_ID));
+                setMatch(await action(matchId));
             } catch (e) {
                 setError(e instanceof Error ? e.message : 'Something went wrong');
             } finally {
@@ -60,7 +61,7 @@ export default function MatchDetailsScreen() {
         );
     }
 
-    const isParticipant = match.participantIds.includes(CURRENT_PLAYER_ID);
+    const isParticipant = user ? match.participantIds.includes(user.id) : false;
     const canJoin = !isParticipant && match.status === 'OPEN';
 
     return (

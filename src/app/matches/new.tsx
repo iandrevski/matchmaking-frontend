@@ -12,8 +12,7 @@ import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
 import { formatTime, toLocalIsoString } from '@/utils/format';
 
-// ПРИВРЕМЕНО додека нема auth: „најавениот“ играч (3 = ana)
-const CURRENT_PLAYER_ID = 3;
+
 
 const HOURS = Array.from({ length: 15 }, (_, i) => 8 + i); // 08:00 – 22:00
 const DURATIONS = [60, 90, 120];
@@ -78,7 +77,7 @@ export default function NewMatchScreen() {
         setSubmitting(true);
         setError(null);
         try {
-            const created = await createMatch(CURRENT_PLAYER_ID, {
+            const created = await createMatch({
                 sportId,
                 venueId,
                 dateFrom: toLocalIsoString(dateFrom),

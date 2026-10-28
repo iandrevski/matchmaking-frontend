@@ -60,3 +60,23 @@ export type Player = {
     homeLat: number | null;
     homeLong: number | null;
 };
+
+export type Role = 'ROLE_USER' | 'ROLE_OWNER' | 'ROLE_ADMIN';
+
+export type User = {
+    id: number;
+    username: string;
+    email: string;
+    role: Role;
+};
+
+export type AuthResponse = {
+    token: string;
+    user: User;
+};
+
+export type RegisterRequest = {
+    username: string;
+    email: string;
+    password: string;
+};

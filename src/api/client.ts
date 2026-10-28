@@ -1,7 +1,30 @@
-import type {ApiError, Match, MatchStatus, Sport, Venue} from './types';
-import {CreateMatchRequest, Player } from "./types";
+import type {
+    ApiError,
+    AuthResponse,
+    CreateMatchRequest,
+    Match,
+    MatchStatus,
+    Player,
+    RegisterRequest,
+    Sport,
+    User,
+    Venue,
+} from './types';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
+// токенот се чува во меморија за да не се чита од складиштето на секое барање
+let authToken: string | null = null;
+let onUnauthorized: (() => void) | null = null;
+
+export function setAuthToken(token: string | null) {
+    authToken = token;
+}
+
+// AuthProvider го регистрира ова: ако токенот истече → автоматски logout
+export function setUnauthorizedHandler(handler: (() => void) | null) {
+    onUnauthorized = handler;
+}
 
 async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
     if (!API_URL) {
@@ -14,21 +37,31 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
             ...options,
             headers: {
                 'Content-Type': 'application/json',
+                ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
                 ...options.headers,
             },
         });
     } catch {
-        // network: backend not running, wrong IP, firewall...
+        // мрежа: backend-от не работи, погрешна IP адреса, firewall...
         throw new Error('Cannot reach the server. Is the backend running?');
     }
 
     if (!response.ok) {
+        if (response.status === 401 && authToken) {
+            onUnauthorized?.(); // токенот истекол или е невалиден
+        }
+
         let message = `Request failed (${response.status})`;
         try {
             const body = (await response.json()) as ApiError;
-            if (body.message) message = body.message;
+            const fields = Object.entries(body.fieldErrors ?? {});
+            if (fields.length > 0) {
+                message = fields.map(([field, msg]) => `${field}: ${msg}`).join('\n');
+            } else if (body.message) {
+                message = body.message;
+            }
         } catch {
-            // the body isn't JSON, keep the default message
+            // телото не е JSON, останува default пораката
         }
         throw new Error(message);
     }
@@ -40,12 +73,29 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
     return (await response.json()) as T;
 }
 
+// ---------- Auth ----------
+export const login = (username: string, password: string) =>
+    apiFetch<AuthResponse>('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ username, password }),
+    });
+
+export const registerPlayer = (body: RegisterRequest) =>
+    apiFetch<AuthResponse>('/auth/register/player', {
+        method: 'POST',
+        body: JSON.stringify(body),
+    });
+
+export const getMe = () => apiFetch<User>('/auth/me');
+
 // ---------- Sports ----------
 export const getSports = () => apiFetch<Sport[]>('/sports');
 
 // ---------- Venues ----------
 export const getVenues = (sportId?: number) =>
-    apiFetch<Venue[]>(`/venues${sportId ? `?sportId=${sportId}` : ''}`);export const getVenue = (id: number) => apiFetch<Venue>(`/venues/${id}`);
+    apiFetch<Venue[]>(`/venues${sportId ? `?sportId=${sportId}` : ''}`);
+
+export const getVenue = (id: number) => apiFetch<Venue>(`/venues/${id}`);
 
 // ---------- Matches ----------
 export type MatchFilters = {
@@ -64,16 +114,15 @@ export const getMatches = (filters: MatchFilters = {}) => {
 export const getOpenMatches = () => apiFetch<Match[]>('/matches?status=OPEN');
 export const getMatch = (id: number) => apiFetch<Match>(`/matches/${id}`);
 
-// TODO (auth): playerId will come from the token, not as a parameter
-export const joinMatch = (matchId: number, playerId: number) =>
-    apiFetch<Match>(`/matches/${matchId}/join?playerId=${playerId}`, { method: 'POST' });
+// играчот е најавениот корисник, backend-от го зема од токенот
+export const joinMatch = (matchId: number) =>
+    apiFetch<Match>(`/matches/${matchId}/join`, { method: 'POST' });
 
-export const leaveMatch = (matchId: number, playerId: number) =>
-    apiFetch<Match>(`/matches/${matchId}/leave?playerId=${playerId}`, { method: 'POST' });
+export const leaveMatch = (matchId: number) =>
+    apiFetch<Match>(`/matches/${matchId}/leave`, { method: 'POST' });
 
-// TODO (auth): organizerId ќе доаѓа од токенот
-export const createMatch = (organizerId: number, body: CreateMatchRequest) =>
-    apiFetch<Match>(`/matches?organizerId=${organizerId}`, {
+export const createMatch = (body: CreateMatchRequest) =>
+    apiFetch<Match>('/matches', {
         method: 'POST',
         body: JSON.stringify(body),
     });

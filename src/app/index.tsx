@@ -19,11 +19,12 @@ import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constan
 import { upcoming } from '@/utils/matches';
 import { sportEmoji } from '@/utils/sports';
 
-// ПРИВРЕМЕНО додека нема auth: „најавениот“ играч (3 = ana)
-const CURRENT_PLAYER_ID = 3;
+import { useAuth } from '@/auth/auth-context';
+
+
 
 export default function HomeScreen() {
-  const [player, setPlayer] = useState<Player | null>(null);
+  const { user, logout } = useAuth();
   const [myMatches, setMyMatches] = useState<Match[]>([]);
   const [openMatches, setOpenMatches] = useState<Match[]>([]);
   const [sports, setSports] = useState<Sport[]>([]);
@@ -32,26 +33,22 @@ export default function HomeScreen() {
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
+    if (!user) return;
     try {
       setError(null);
-      // четирите повици се праќаат паралелно, не еден по еден
-      const [p, mine, open, allSports] = await Promise.all([
-        getPlayer(CURRENT_PLAYER_ID),
-        getPlayerMatches(CURRENT_PLAYER_ID),
+      const [mine, open, allSports] = await Promise.all([
+        getPlayerMatches(user.id),
         getMatches({ status: 'OPEN' }),
         getSports(),
       ]);
-      setPlayer(p);
       setMyMatches(upcoming(mine, 3));
       // „отворени“ = оние каде што уште не си, за да не се повторуваат со „мои“
-      setOpenMatches(
-          upcoming(open.filter((m) => !m.participantIds.includes(CURRENT_PLAYER_ID)), 3),
-      );
+      setOpenMatches(upcoming(open.filter((m) => !m.participantIds.includes(user.id)), 3));
       setSports(allSports);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong');
     }
-  }, []);
+  }, [user]);
 
   useFocusEffect(
       useCallback(() => {
@@ -79,10 +76,17 @@ export default function HomeScreen() {
           <ScrollView
               contentContainerStyle={styles.content}
               refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-            {/* поздрав */}
-            <View>
-              <ThemedText type="subtitle">Hi, {player?.username ?? 'player'} 👋</ThemedText>
-              <ThemedText themeColor="textSecondary">Ready for a game?</ThemedText>
+            {/* поздрав + одјава */}
+            <View style={styles.greeting}>
+              <View>
+                <ThemedText type="subtitle">Hi, {user?.username} 👋</ThemedText>
+                <ThemedText themeColor="textSecondary">Ready for a game?</ThemedText>
+              </View>
+              <Pressable onPress={logout} style={({ pressed }) => pressed && styles.pressed}>
+                <ThemedText type="small" style={styles.link}>
+                  Log out
+                </ThemedText>
+              </Pressable>
             </View>
 
             {error && <ThemedText style={styles.error}>{error}</ThemedText>}
@@ -238,5 +242,10 @@ const styles = StyleSheet.create({
   sportEmoji: {
     fontSize: 28,
     lineHeight: 34,
+  },
+  greeting: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
 });
