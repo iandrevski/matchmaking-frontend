@@ -98,3 +98,8 @@ export type VenueRequest = {
     longitude: number | null;
     sportIds: number[];
 };
+
+export type NearbyMatch = {
+    match: Match;
+    distanceKm: number;
+};
