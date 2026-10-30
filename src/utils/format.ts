@@ -19,4 +19,11 @@ export function toLocalIsoString(date: Date) {
         `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
         `T${pad(date.getHours())}:${pad(date.getMinutes())}:00`
     );
+
+
+}
+
+// "Jane Sandanski 1, Aerodrom, Skopje" (ги прескокнува празните делови)
+export function formatAddress(venue: { address: string | null; municipality: string | null; city: string | null }) {
+    return [venue.address, venue.municipality, venue.city].filter(Boolean).join(', ') || 'No address';
 }

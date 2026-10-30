@@ -80,3 +80,11 @@ export type RegisterRequest = {
     email: string;
     password: string;
 };
+
+export type UpdatePlayerRequest = {
+    age: number | null;
+    height: number | null;
+    weight: number | null;
+    homeLat: number | null;
+    homeLong: number | null;
+};

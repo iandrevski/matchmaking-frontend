@@ -1,4 +1,4 @@
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,8 +11,6 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
 import { formatTime, toLocalIsoString } from '@/utils/format';
-
-
 
 const HOURS = Array.from({ length: 15 }, (_, i) => 8 + i); // 08:00 – 22:00
 const DURATIONS = [60, 90, 120];
@@ -34,8 +32,13 @@ function dayLabel(day: Date, index: number) {
 }
 
 export default function NewMatchScreen() {
+    // ако дошле од Venue → ?sportId=1&venueId=2
+    const params = useLocalSearchParams<{ sportId?: string; venueId?: string }>();
+
     const [sports, setSports] = useState<Sport[]>([]);
-    const [sportId, setSportId] = useState<number | null>(null);
+    const [sportId, setSportId] = useState<number | null>(
+        params.sportId ? Number(params.sportId) : null,
+    );
     const [venues, setVenues] = useState<Venue[]>([]);
     const [venueId, setVenueId] = useState<number | null>(null);
     const [loadingVenues, setLoadingVenues] = useState(false);
@@ -51,7 +54,7 @@ export default function NewMatchScreen() {
         getSports().then(setSports).catch(() => setError('Could not load sports'));
     }, []);
 
-    // кога ќе се смени спортот: ресетирај терен и вчитај ги само теретите за тој спорт
+    // кога ќе се смени спортот: ресетирај терен и вчитај ги само тие за тој спорт
     useEffect(() => {
         setVenueId(null);
         if (!sportId) {
@@ -60,10 +63,17 @@ export default function NewMatchScreen() {
         }
         setLoadingVenues(true);
         getVenues(sportId)
-            .then(setVenues)
+            .then((list) => {
+                setVenues(list);
+                // ако дошле од Venue и тој терен го има овој спорт → избери го
+                const wanted = Number(params.venueId);
+                if (wanted && list.some((v) => v.id === wanted)) {
+                    setVenueId(wanted);
+                }
+            })
             .catch(() => setError('Could not load venues'))
             .finally(() => setLoadingVenues(false));
-    }, [sportId]);
+    }, [sportId, params.venueId]);
 
     // пресметани од изборите, не се посебен state
     const dateFrom = new Date(days[dayIndex]);
@@ -77,6 +87,7 @@ export default function NewMatchScreen() {
         setSubmitting(true);
         setError(null);
         try {
+            // организаторот е најавениот корисник, backend-от го зема од токенот
             const created = await createMatch({
                 sportId,
                 venueId,
