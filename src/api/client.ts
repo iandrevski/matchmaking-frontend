@@ -6,7 +6,7 @@ import type {
     MatchStatus,
     Player,
     RegisterRequest,
-    Sport,
+    Sport, UpdatePlayerRequest,
     User,
     Venue,
 } from './types';
@@ -103,6 +103,9 @@ export type MatchFilters = {
     status?: MatchStatus | null;
 };
 
+export const getVenueMatches = (venueId: number) =>
+    apiFetch<Match[]>(`/matches/venue/${venueId}`);
+
 export const getMatches = (filters: MatchFilters = {}) => {
     const params = new URLSearchParams();
     if (filters.sportId) params.append('sportId', String(filters.sportId));
@@ -131,3 +134,11 @@ export const createMatch = (body: CreateMatchRequest) =>
 export const getPlayer = (id: number) => apiFetch<Player>(`/players/${id}`);
 export const getPlayerMatches = (playerId: number) =>
     apiFetch<Match[]>(`/matches/player/${playerId}`);
+
+export const getMyProfile = () => apiFetch<Player>('/players/me');
+
+export const updateMyProfile = (body: UpdatePlayerRequest) =>
+    apiFetch<Player>('/players/me', {
+        method: 'PUT',
+        body: JSON.stringify(body),
+    });

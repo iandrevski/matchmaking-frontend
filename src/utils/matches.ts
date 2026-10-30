@@ -8,3 +8,10 @@ export function upcoming(matches: Match[], limit?: number) {
         .sort((a, b) => new Date(a.dateFrom).getTime() - new Date(b.dateFrom).getTime());
     return limit ? result.slice(0, limit) : result;
 }
+// одиграни натпревари, најновите први
+export function past(matches: Match[]) {
+    const now = Date.now();
+    return matches
+        .filter((m) => m.status !== 'CANCELLED' && new Date(m.dateTo).getTime() < now)
+        .sort((a, b) => new Date(b.dateFrom).getTime() - new Date(a.dateFrom).getTime());
+}

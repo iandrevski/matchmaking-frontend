@@ -10,8 +10,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { getMatches, getPlayer, getPlayerMatches, getSports } from '@/api/client';
-import type { Match, Player, Sport } from '@/api/types';
+import { getMatches, getPlayerMatches, getSports } from '@/api/client';
+import type { Match, Sport } from '@/api/types';
+import { useAuth } from '@/auth/auth-context';
 import { MatchCard } from '@/components/match-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -19,12 +20,8 @@ import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constan
 import { upcoming } from '@/utils/matches';
 import { sportEmoji } from '@/utils/sports';
 
-import { useAuth } from '@/auth/auth-context';
-
-
-
 export default function HomeScreen() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [myMatches, setMyMatches] = useState<Match[]>([]);
   const [openMatches, setOpenMatches] = useState<Match[]>([]);
   const [sports, setSports] = useState<Sport[]>([]);
@@ -76,17 +73,10 @@ export default function HomeScreen() {
           <ScrollView
               contentContainerStyle={styles.content}
               refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-            {/* поздрав + одјава */}
-            <View style={styles.greeting}>
-              <View>
-                <ThemedText type="subtitle">Hi, {user?.username} 👋</ThemedText>
-                <ThemedText themeColor="textSecondary">Ready for a game?</ThemedText>
-              </View>
-              <Pressable onPress={logout} style={({ pressed }) => pressed && styles.pressed}>
-                <ThemedText type="small" style={styles.link}>
-                  Log out
-                </ThemedText>
-              </Pressable>
+            {/* поздрав */}
+            <View>
+              <ThemedText type="subtitle">Hi, {user?.username} 👋</ThemedText>
+              <ThemedText themeColor="textSecondary">Ready for a game?</ThemedText>
             </View>
 
             {error && <ThemedText style={styles.error}>{error}</ThemedText>}
@@ -242,10 +232,5 @@ const styles = StyleSheet.create({
   sportEmoji: {
     fontSize: 28,
     lineHeight: 34,
-  },
-  greeting: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
   },
 });
