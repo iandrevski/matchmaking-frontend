@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import {
     getMe,
     login as apiLogin,
+    registerPartner,
     registerPlayer,
     setAuthToken,
     setUnauthorizedHandler,
@@ -10,11 +11,13 @@ import {
 import type { AuthResponse, RegisterRequest, User } from '@/api/types';
 import { clearToken, loadToken, saveToken } from '@/auth/token-storage';
 
+type AccountType = 'player' | 'partner';
+
 type AuthContextValue = {
     user: User | null;
     loading: boolean; // додека се проверува зачуваниот токен при стартување
     login: (username: string, password: string) => Promise<void>;
-    register: (body: RegisterRequest) => Promise<void>;
+    register: (body: RegisterRequest, accountType: AccountType) => Promise<void>;
     logout: () => Promise<void>;
 };
 
@@ -68,7 +71,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
 
     const register = useCallback(
-        async (body: RegisterRequest) => startSession(await registerPlayer(body)),
+        async (body: RegisterRequest, accountType: AccountType) =>
+            startSession(await (accountType === 'partner' ? registerPartner(body) : registerPlayer(body))),
         [startSession],
     );
 

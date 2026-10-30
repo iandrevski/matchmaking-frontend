@@ -88,3 +88,13 @@ export type UpdatePlayerRequest = {
     homeLat: number | null;
     homeLong: number | null;
 };
+
+export type VenueRequest = {
+    name: string;
+    city: string | null;
+    municipality: string | null;
+    address: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    sportIds: number[];
+};

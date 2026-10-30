@@ -6,10 +6,12 @@ import {
     Pressable,
     StyleSheet,
     TextInput,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/auth/auth-context';
+import { Chip } from '@/components/chip';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -22,6 +24,7 @@ export function AuthScreen() {
     const theme = useTheme();
 
     const [mode, setMode] = useState<Mode>('login');
+    const [accountType, setAccountType] = useState<'player' | 'partner'>('player');
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -38,7 +41,7 @@ export function AuthScreen() {
         setError(null);
         try {
             if (isRegister) {
-                await register({ username: username.trim(), email: email.trim(), password });
+                await register({ username: username.trim(), email: email.trim(), password }, accountType);
             } else {
                 await login(username.trim(), password);
             }
@@ -64,8 +67,23 @@ export function AuthScreen() {
                     style={styles.form}>
                     <ThemedText type="subtitle">Sportify</ThemedText>
                     <ThemedText themeColor="textSecondary">
-                        {isRegister ? 'Create an account to join matches' : 'Log in to find a match'}
+                        {isRegister ? 'Create an account to get started' : 'Log in to find a match'}
                     </ThemedText>
+
+                    {isRegister && (
+                        <View style={styles.accountType}>
+                            <Chip
+                                label="Player"
+                                selected={accountType === 'player'}
+                                onPress={() => setAccountType('player')}
+                            />
+                            <Chip
+                                label="Venue owner"
+                                selected={accountType === 'partner'}
+                                onPress={() => setAccountType('partner')}
+                            />
+                        </View>
+                    )}
 
                     <TextInput
                         style={inputStyle}
@@ -142,6 +160,10 @@ const styles = StyleSheet.create({
     },
     form: {
         gap: Spacing.three,
+    },
+    accountType: {
+        flexDirection: 'row',
+        gap: Spacing.two,
     },
     input: {
         paddingHorizontal: Spacing.three,

@@ -14,13 +14,20 @@ import { getMatches, getPlayerMatches, getSports } from '@/api/client';
 import type { Match, Sport } from '@/api/types';
 import { useAuth } from '@/auth/auth-context';
 import { MatchCard } from '@/components/match-card';
+import { PartnerHome } from '@/components/partner-home';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
 import { upcoming } from '@/utils/matches';
 import { sportEmoji } from '@/utils/sports';
 
+// различен Home според улогата
 export default function HomeScreen() {
+  const { user } = useAuth();
+  return user?.role === 'ROLE_OWNER' ? <PartnerHome /> : <PlayerHome />;
+}
+
+function PlayerHome() {
   const { user } = useAuth();
   const [myMatches, setMyMatches] = useState<Match[]>([]);
   const [openMatches, setOpenMatches] = useState<Match[]>([]);

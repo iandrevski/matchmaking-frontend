@@ -3,8 +3,9 @@ import { useCallback, useState } from 'react';
 import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { getVenue, getVenueMatches } from '@/api/client';
+import { deleteVenue, getVenue, getVenueMatches } from '@/api/client';
 import type { Match, Venue } from '@/api/types';
+import { useAuth } from '@/auth/auth-context';
 import { MatchCard } from '@/components/match-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -16,13 +17,15 @@ import { sportEmoji } from '@/utils/sports';
 export default function VenueDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const venueId = Number(id);
+    const { user } = useAuth();
 
     const [venue, setVenue] = useState<Venue | null>(null);
     const [matches, setMatches] = useState<Match[]>([]);
     const [loading, setLoading] = useState(true);
+    const [confirmDelete, setConfirmDelete] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // useFocusEffect: ако креираш натпревар тука и се вратиш, листата е освежена
+    // useFocusEffect: податоците се освежуваат по враќање од формата
     useFocusEffect(
         useCallback(() => {
             Promise.all([getVenue(venueId), getVenueMatches(venueId)])
@@ -51,11 +54,13 @@ export default function VenueDetailsScreen() {
         );
     }
 
+    const isPartner = user?.role === 'ROLE_OWNER';
+    const isOwner = user?.id === venue.ownerId;
     const hasLocation = venue.latitude !== null && venue.longitude !== null;
 
     function openInMaps() {
         if (!venue) return;
-        // Google Maps линк: работи на web, Android и iOS (отвора апликација или browser)
+        // Google Maps линк: работи на web, Android и iOS
         Linking.openURL(
             `https://www.google.com/maps/search/?api=1&query=${venue.latitude},${venue.longitude}`,
         );
@@ -67,6 +72,29 @@ export default function VenueDetailsScreen() {
             pathname: '/matches/new',
             params: { venueId: venue.id, sportId: venue.sports[0]?.id },
         });
+    }
+
+    function editVenue() {
+        router.push({ pathname: '/venues/edit/[id]', params: { id: venueId } });
+    }
+
+    // прв клик бара потврда, втор брише
+    async function onDelete() {
+        if (!confirmDelete) {
+            setConfirmDelete(true);
+            return;
+        }
+        try {
+            await deleteVenue(venueId);
+            if (router.canGoBack()) {
+                router.back();
+            } else {
+                router.replace('/venues');
+            }
+        } catch (e) {
+            setConfirmDelete(false);
+            setError(e instanceof Error ? e.message : 'Something went wrong');
+        }
     }
 
     return (
@@ -89,11 +117,29 @@ export default function VenueDetailsScreen() {
                     </View>
 
                     <View style={styles.actions}>
-                        <Pressable
-                            onPress={createMatchHere}
-                            style={({ pressed }) => [styles.button, styles.buttonPrimary, pressed && styles.pressed]}>
-                            <ThemedText style={styles.buttonText}>+ Create match here</ThemedText>
-                        </Pressable>
+                        {!isPartner && (
+                            <Pressable
+                                onPress={createMatchHere}
+                                style={({ pressed }) => [styles.button, styles.buttonPrimary, pressed && styles.pressed]}>
+                                <ThemedText style={styles.buttonText}>+ Create match here</ThemedText>
+                            </Pressable>
+                        )}
+                        {isOwner && (
+                            <Pressable
+                                onPress={editVenue}
+                                style={({ pressed }) => [styles.button, styles.buttonPrimary, pressed && styles.pressed]}>
+                                <ThemedText style={styles.buttonText}>Edit venue</ThemedText>
+                            </Pressable>
+                        )}
+                        {isOwner && (
+                            <Pressable
+                                onPress={onDelete}
+                                style={({ pressed }) => [styles.button, styles.buttonDanger, pressed && styles.pressed]}>
+                                <ThemedText style={styles.buttonText}>
+                                    {confirmDelete ? 'Tap again to delete' : 'Delete venue'}
+                                </ThemedText>
+                            </Pressable>
+                        )}
                         {hasLocation && (
                             <Pressable
                                 onPress={openInMaps}
@@ -105,6 +151,8 @@ export default function VenueDetailsScreen() {
                         )}
                     </View>
 
+                    {error && <ThemedText style={styles.error}>{error}</ThemedText>}
+
                     <View style={styles.section}>
                         <ThemedText type="smallBold">Upcoming matches</ThemedText>
                         {matches.length === 0 ? (
@@ -112,7 +160,7 @@ export default function VenueDetailsScreen() {
                                 No upcoming matches here yet.
                             </ThemedText>
                         ) : (
-                            matches.map((m) => <MatchCard key={m.id} match={m} />)
+                            matches.map((m) => <MatchCard key={m.id} match={m} linked={!isPartner} />)
                         )}
                     </View>
                 </ScrollView>
@@ -162,6 +210,11 @@ const styles = StyleSheet.create({
     },
     buttonPrimary: {
         backgroundColor: '#3c87f7',
+        paddingVertical: Spacing.three,
+        alignItems: 'center',
+    },
+    buttonDanger: {
+        backgroundColor: '#e5484d',
         paddingVertical: Spacing.three,
         alignItems: 'center',
     },
