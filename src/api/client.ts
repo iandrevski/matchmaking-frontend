@@ -8,7 +8,7 @@ import type {
     RegisterRequest,
     Sport, UpdatePlayerRequest,
     User,
-    Venue,
+    Venue, VenueRequest,
 } from './types';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -88,6 +88,12 @@ export const registerPlayer = (body: RegisterRequest) =>
 
 export const getMe = () => apiFetch<User>('/auth/me');
 
+export const registerPartner = (body: RegisterRequest) =>
+    apiFetch<AuthResponse>('/auth/register/partner', {
+        method: 'POST',
+        body: JSON.stringify(body),
+    });
+
 // ---------- Sports ----------
 export const getSports = () => apiFetch<Sport[]>('/sports');
 
@@ -97,6 +103,15 @@ export const getVenues = (sportId?: number) =>
 
 export const getVenue = (id: number) => apiFetch<Venue>(`/venues/${id}`);
 
+export const getMyVenues = (ownerId: number) => apiFetch<Venue[]>(`/venues?ownerId=${ownerId}`);
+
+export const createVenue = (body: VenueRequest) =>
+    apiFetch<Venue>('/venues', { method: 'POST', body: JSON.stringify(body) });
+
+export const updateVenue = (id: number, body: VenueRequest) =>
+    apiFetch<Venue>(`/venues/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+
+export const deleteVenue = (id: number) => apiFetch<void>(`/venues/${id}`, { method: 'DELETE' });
 // ---------- Matches ----------
 export type MatchFilters = {
     sportId?: number | null;

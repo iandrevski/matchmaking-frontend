@@ -16,56 +16,67 @@ const STATUS_COLORS: Record<MatchStatus, string> = {
     CANCELLED: '#e5484d',
 };
 
-export function MatchCard({ match }: { match: Match }) {
+type Props = {
+    match: Match;
+    linked?: boolean; // false за партнер: тој нема екран за детали на натпревар
+};
+
+export function MatchCard({ match, linked = true }: Props) {
     const theme = useTheme();
     const max = match.sport.numberOfPlayers;
     const fill = Math.min(match.participantsCount / max, 1);
     const spotsLeft = Math.max(max - match.participantsCount, 0);
 
+    const card = (
+        <ThemedView type="backgroundElement" style={styles.card}>
+            {/* header: icon + sport + status */}
+            <View style={styles.header}>
+                <ThemedText style={styles.emoji}>{sportEmoji(match.sport.name)}</ThemedText>
+                <View style={styles.headerText}>
+                    <ThemedText type="smallBold">{match.sport.name}</ThemedText>
+                    <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
+                        {match.venueName}
+                    </ThemedText>
+                </View>
+                <View style={[styles.badge, { backgroundColor: STATUS_COLORS[match.status] }]}>
+                    <ThemedText style={styles.badgeText}>{match.status}</ThemedText>
+                </View>
+            </View>
+
+            {/* time */}
+            <ThemedText type="small">
+                🕒 {formatMatchDate(match.dateFrom)} – {formatTime(match.dateTo)}
+            </ThemedText>
+
+            {/* players + progress */}
+            <View style={styles.playersRow}>
+                <ThemedText type="small" themeColor="textSecondary">
+                    {match.participantsCount}/{max} players
+                </ThemedText>
+                {match.status === 'OPEN' && (
+                    <ThemedText type="small" style={{ color: STATUS_COLORS.OPEN }}>
+                        {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} left
+                    </ThemedText>
+                )}
+            </View>
+            <View style={[styles.track, { backgroundColor: theme.backgroundSelected }]}>
+                <View
+                    style={[
+                        styles.fill,
+                        { width: `${fill * 100}%`, backgroundColor: STATUS_COLORS[match.status] },
+                    ]}
+                />
+            </View>
+        </ThemedView>
+    );
+
+    if (!linked) {
+        return card;
+    }
+
     return (
         <Link href={{ pathname: '/matches/[id]', params: { id: match.id } }} asChild>
-            <Pressable style={({ pressed }) => pressed && styles.pressed}>
-                <ThemedView type="backgroundElement" style={styles.card}>
-                    {/* header: icon + sport + status */}
-                    <View style={styles.header}>
-                        <ThemedText style={styles.emoji}>{sportEmoji(match.sport.name)}</ThemedText>
-                        <View style={styles.headerText}>
-                            <ThemedText type="smallBold">{match.sport.name}</ThemedText>
-                            <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
-                                {match.venueName}
-                            </ThemedText>
-                        </View>
-                        <View style={[styles.badge, { backgroundColor: STATUS_COLORS[match.status] }]}>
-                            <ThemedText style={styles.badgeText}>{match.status}</ThemedText>
-                        </View>
-                    </View>
-
-                    {/* time */}
-                    <ThemedText type="small">
-                        🕒 {formatMatchDate(match.dateFrom)} – {formatTime(match.dateTo)}
-                    </ThemedText>
-
-                    {/* players + progress */}
-                    <View style={styles.playersRow}>
-                        <ThemedText type="small" themeColor="textSecondary">
-                            {match.participantsCount}/{max} players
-                        </ThemedText>
-                        {match.status === 'OPEN' && (
-                            <ThemedText type="small" style={{ color: STATUS_COLORS.OPEN }}>
-                                {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} left
-                            </ThemedText>
-                        )}
-                    </View>
-                    <View style={[styles.track, { backgroundColor: theme.backgroundSelected }]}>
-                        <View
-                            style={[
-                                styles.fill,
-                                { width: `${fill * 100}%`, backgroundColor: STATUS_COLORS[match.status] },
-                            ]}
-                        />
-                    </View>
-                </ThemedView>
-            </Pressable>
+            <Pressable style={({ pressed }) => pressed && styles.pressed}>{card}</Pressable>
         </Link>
     );
 }
