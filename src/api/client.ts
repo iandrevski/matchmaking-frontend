@@ -3,7 +3,7 @@ import type {
     AuthResponse,
     CreateMatchRequest,
     Match,
-    MatchStatus,
+    MatchStatus, NearbyMatch,
     Player,
     RegisterRequest,
     Sport, UpdatePlayerRequest,
@@ -145,6 +145,9 @@ export const createMatch = (body: CreateMatchRequest) =>
         body: JSON.stringify(body),
     });
 
+export const getNearbyMatches = (lat: number, lng: number, radiusKm: number) =>
+    apiFetch<NearbyMatch[]>(`/matches/nearby?lat=${lat}&lng=${lng}&radiusKm=${radiusKm}`);
+
 // ---------- Players ----------
 export const getPlayer = (id: number) => apiFetch<Player>(`/players/${id}`);
 export const getPlayerMatches = (playerId: number) =>
@@ -156,4 +159,10 @@ export const updateMyProfile = (body: UpdatePlayerRequest) =>
     apiFetch<Player>('/players/me', {
         method: 'PUT',
         body: JSON.stringify(body),
+    });
+
+export const updateMyLocation = (lat: number, lng: number) =>
+    apiFetch<Player>('/players/me/location', {
+        method: 'PUT',
+        body: JSON.stringify({ lat, lng }),
     });

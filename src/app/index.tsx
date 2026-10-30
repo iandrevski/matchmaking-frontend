@@ -20,6 +20,7 @@ import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
 import { upcoming } from '@/utils/matches';
 import { sportEmoji } from '@/utils/sports';
+import { NearbyMatches } from '@/components/nearby-matches';
 
 // различен Home според улогата
 export default function HomeScreen() {
@@ -94,6 +95,8 @@ function PlayerHome() {
                 <ThemedText style={styles.ctaText}>+ Create a match</ThemedText>
               </Pressable>
             </Link>
+
+            <NearbyMatches />
 
             {/* мои натпревари */}
             <Section title="My upcoming matches">
