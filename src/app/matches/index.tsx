@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { getMatches, getSports } from '@/api/client';
 import type { Match, Sport } from '@/api/types';
 import { MatchCard } from '@/components/match-card';
+import { MiniCalendar } from '@/components/mini-calendar';
 import { SportFilter } from '@/components/sport-filter';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -17,6 +18,7 @@ export default function MatchesScreen() {
     const [matches, setMatches] = useState<Match[]>([]);
     const [sports, setSports] = useState<Sport[]>([]);
     const [selectedSportId, setSelectedSportId] = useState<number | null>(null);
+    const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -24,11 +26,11 @@ export default function MatchesScreen() {
     const loadMatches = useCallback(async () => {
         try {
             setError(null);
-            setMatches(await getMatches({ sportId: selectedSportId }));
+            setMatches(await getMatches({ sportId: selectedSportId, date: selectedDate }));
         } catch (e) {
             setError(e instanceof Error ? e.message : 'Something went wrong');
         }
-    }, [selectedSportId]);
+    }, [selectedSportId, selectedDate]);
 
     // спортовите се вчитуваат еднаш
     useEffect(() => {
@@ -42,7 +44,7 @@ export default function MatchesScreen() {
         }
     }, [params.sportId]);
 
-    // натпреварите се вчитуваат секој пат кога екранот станува активен или се менува филтерот
+    // натпреварите се вчитуваат секој пат кога екранот станува активен или се менува филтер
     useFocusEffect(
         useCallback(() => {
             loadMatches().finally(() => setLoading(false));
@@ -71,6 +73,12 @@ export default function MatchesScreen() {
 
                 <SportFilter sports={sports} selectedId={selectedSportId} onSelect={setSelectedSportId} />
 
+                <MiniCalendar
+                    selectedDate={selectedDate}
+                    onSelect={setSelectedDate}
+                    sportId={selectedSportId}
+                />
+
                 {error && <ThemedText style={styles.error}>{error}</ThemedText>}
 
                 {loading ? (
@@ -85,7 +93,7 @@ export default function MatchesScreen() {
                         ListEmptyComponent={
                             !error ? (
                                 <ThemedText themeColor="textSecondary">
-                                    {selectedSportId ? 'No matches for this sport yet.' : 'No matches yet.'}
+                                    {selectedSportId || selectedDate ? 'No matches for these filters.' : 'No matches yet.'}
                                 </ThemedText>
                             ) : null
                         }
