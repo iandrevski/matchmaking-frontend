@@ -139,6 +139,9 @@ export const joinMatch = (matchId: number) =>
 export const leaveMatch = (matchId: number) =>
     apiFetch<Match>(`/matches/${matchId}/leave`, { method: 'POST' });
 
+export const cancelMatch = (matchId: number) =>
+    apiFetch<Match>(`/matches/${matchId}/cancel`, { method: 'POST' });
+
 export const createMatch = (body: CreateMatchRequest) =>
     apiFetch<Match>('/matches', {
         method: 'POST',

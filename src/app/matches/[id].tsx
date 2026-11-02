@@ -3,14 +3,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { getMatch, joinMatch, leaveMatch } from '@/api/client';
+import { cancelMatch, getMatch, joinMatch, leaveMatch } from '@/api/client';
 import type { Match } from '@/api/types';
+import { useAuth } from '@/auth/auth-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
 import { formatMatchDate } from '@/utils/format';
-
-import { useAuth } from '@/auth/auth-context';
 
 export default function MatchDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
@@ -20,6 +19,7 @@ export default function MatchDetailsScreen() {
     const [match, setMatch] = useState<Match | null>(null);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [confirmCancel, setConfirmCancel] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -29,7 +29,7 @@ export default function MatchDetailsScreen() {
             .finally(() => setLoading(false));
     }, [matchId]);
 
-    // join or leave → the backend returns the updated match
+    // join, leave или cancel → backend-от го враќа ажурираниот натпревар
     const runAction = useCallback(
         async (action: (matchId: number) => Promise<Match>) => {
             setSubmitting(true);
@@ -44,6 +44,16 @@ export default function MatchDetailsScreen() {
         },
         [matchId],
     );
+
+    // откажувањето не може да се врати, затоа првиот клик бара потврда
+    function onCancelPress() {
+        if (!confirmCancel) {
+            setConfirmCancel(true);
+            return;
+        }
+        setConfirmCancel(false);
+        runAction(cancelMatch);
+    }
 
     if (loading) {
         return (
@@ -61,7 +71,9 @@ export default function MatchDetailsScreen() {
         );
     }
 
+    const isActive = match.status === 'OPEN' || match.status === 'FULL';
     const isParticipant = user ? match.participantIds.includes(user.id) : false;
+    const isOrganizer = user?.id === match.organizerId;
     const canJoin = !isParticipant && match.status === 'OPEN';
 
     return (
@@ -82,7 +94,7 @@ export default function MatchDetailsScreen() {
 
                 {error && <ThemedText style={styles.error}>{error}</ThemedText>}
 
-                {isParticipant ? (
+                {isParticipant && isActive ? (
                     <ActionButton
                         label="Leave match"
                         variant="secondary"
@@ -95,6 +107,15 @@ export default function MatchDetailsScreen() {
                         disabled={!canJoin}
                         loading={submitting}
                         onPress={() => runAction(joinMatch)}
+                    />
+                )}
+
+                {isOrganizer && isActive && (
+                    <ActionButton
+                        label={confirmCancel ? 'Tap again to cancel' : 'Cancel match'}
+                        variant="secondary"
+                        loading={submitting}
+                        onPress={onCancelPress}
                     />
                 )}
             </SafeAreaView>
