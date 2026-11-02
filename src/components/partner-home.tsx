@@ -1,4 +1,4 @@
-import { Link, useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -45,11 +45,11 @@ export function PartnerHome() {
                     </Pressable>
                 </View>
 
-                <Link href="/venues/new" asChild>
-                    <Pressable style={({ pressed }) => [styles.cta, pressed && styles.pressed]}>
-                        <ThemedText style={styles.ctaText}>+ Add a venue</ThemedText>
-                    </Pressable>
-                </Link>
+                <Pressable
+                    onPress={() => router.push('/venues/new')}
+                    style={({ pressed }) => [styles.cta, pressed && styles.pressed]}>
+                    <ThemedText style={styles.ctaText}>+ Add a venue</ThemedText>
+                </Pressable>
 
                 {error && <ThemedText style={styles.error}>{error}</ThemedText>}
 

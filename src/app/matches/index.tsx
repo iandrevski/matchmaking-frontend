@@ -1,6 +1,7 @@
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useFocusEffect, useLocalSearchParams} from 'expo-router';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';import { SafeAreaView } from 'react-native-safe-area-context';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getMatches, getSports } from '@/api/client';
 import type { Match, Sport } from '@/api/types';
@@ -34,6 +35,7 @@ export default function MatchesScreen() {
         getSports().then(setSports).catch(() => {});
     }, []);
 
+    // ако дошле од Home со ?sportId=2 → селектирај го тој спорт
     useEffect(() => {
         if (params.sportId) {
             setSelectedSportId(Number(params.sportId));
@@ -58,14 +60,15 @@ export default function MatchesScreen() {
             <SafeAreaView style={styles.safeArea}>
                 <View style={styles.header}>
                     <ThemedText type="subtitle">Matches</ThemedText>
-                    <Link href="/matches/new" asChild>
-                        <Pressable style={({ pressed }) => [styles.newButton, pressed && styles.pressed]}>
-                            <ThemedText type="smallBold" style={styles.newButtonText}>
-                                + New
-                            </ThemedText>
-                        </Pressable>
-                    </Link>
+                    <Pressable
+                        onPress={() => router.push('/matches/new')}
+                        style={({ pressed }) => [styles.newButton, pressed && styles.pressed]}>
+                        <ThemedText type="smallBold" style={styles.newButtonText}>
+                            + New
+                        </ThemedText>
+                    </Pressable>
                 </View>
+
                 <SportFilter sports={sports} selectedId={selectedSportId} onSelect={setSelectedSportId} />
 
                 {error && <ThemedText style={styles.error}>{error}</ThemedText>}
@@ -106,16 +109,6 @@ const styles = StyleSheet.create({
         paddingTop: TopTabInset + Spacing.four,
         gap: Spacing.three,
     },
-    list: {
-        gap: Spacing.three,
-        paddingBottom: BottomTabInset + Spacing.three,
-    },
-    loader: {
-        marginTop: Spacing.five,
-    },
-    error: {
-        color: '#e5484d',
-    },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -132,5 +125,15 @@ const styles = StyleSheet.create({
     },
     pressed: {
         opacity: 0.8,
+    },
+    list: {
+        gap: Spacing.three,
+        paddingBottom: BottomTabInset + Spacing.three,
+    },
+    loader: {
+        marginTop: Spacing.five,
+    },
+    error: {
+        color: '#e5484d',
     },
 });
