@@ -35,6 +35,7 @@ export function SportFilter({ sports, selectedId, onSelect, showAll = true }: Pr
 const styles = StyleSheet.create({
     scroll: {
         flexGrow: 0,
+        flexShrink: 0,
     },
     row: {
         gap: Spacing.two,

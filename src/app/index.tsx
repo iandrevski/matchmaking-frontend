@@ -90,11 +90,11 @@ function PlayerHome() {
             {error && <ThemedText style={styles.error}>{error}</ThemedText>}
 
             {/* главна акција */}
-            <Link href="/matches/new" asChild>
-              <Pressable style={({ pressed }) => [styles.cta, pressed && styles.pressed]}>
+              <Pressable
+                  onPress={() => router.push('/matches/new')}
+                  style={({ pressed }) => [styles.cta, pressed && styles.pressed]}>
                 <ThemedText style={styles.ctaText}>+ Create a match</ThemedText>
               </Pressable>
-            </Link>
 
             <NearbyMatches />
 
