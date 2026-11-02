@@ -8,6 +8,11 @@ export type Sport = {
 
 export type MatchStatus = 'OPEN' | 'FULL' | 'FINISHED' | 'CANCELLED';
 
+export type Participant = {
+    id: number;
+    username: string;
+};
+
 export type Match = {
     id: number;
     dateFrom: string; // ISO string, e.g. "2026-10-16T18:00:00"
@@ -20,6 +25,7 @@ export type Match = {
     organizerUsername: string | null;
     participantsCount: number;
     participantIds: number[];
+    participants: Participant[];
 };
 
 export type Venue = {

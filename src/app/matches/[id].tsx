@@ -1,14 +1,15 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { cancelMatch, getMatch, joinMatch, leaveMatch } from '@/api/client';
 import type { Match } from '@/api/types';
 import { useAuth } from '@/auth/auth-context';
+import { PlayerLineup } from '@/components/player-lineup';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
+import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
 import { formatMatchDate } from '@/utils/format';
 
 export default function MatchDetailsScreen() {
@@ -79,45 +80,54 @@ export default function MatchDetailsScreen() {
     return (
         <ThemedView style={styles.container}>
             <SafeAreaView style={styles.safeArea}>
-                <ThemedText type="subtitle">{match.sport.name}</ThemedText>
+                <ScrollView contentContainerStyle={styles.content}>
+                    <ThemedText type="subtitle">{match.sport.name}</ThemedText>
 
-                <ThemedView type="backgroundElement" style={styles.card}>
-                    <Row label="Venue" value={match.venueName} />
-                    <Row label="When" value={formatMatchDate(match.dateFrom, 'long')} />
-                    <Row label="Organizer" value={match.organizerUsername ?? '—'} />
-                    <Row
-                        label="Players"
-                        value={`${match.participantsCount}/${match.sport.numberOfPlayers}`}
-                    />
-                    <Row label="Status" value={match.status} />
-                </ThemedView>
+                    <ThemedView type="backgroundElement" style={styles.card}>
+                        <Row label="Venue" value={match.venueName} />
+                        <Row label="When" value={formatMatchDate(match.dateFrom, 'long')} />
+                        <Row label="Organizer" value={match.organizerUsername ?? '—'} />
+                        <Row
+                            label="Players"
+                            value={`${match.participantsCount}/${match.sport.numberOfPlayers}`}
+                        />
+                        <Row label="Status" value={match.status} />
+                    </ThemedView>
 
-                {error && <ThemedText style={styles.error}>{error}</ThemedText>}
+                    <PlayerLineup
+                        match={match}
+                        currentUserId={user?.id}
+                        canJoin={canJoin && !submitting}
+                        onJoin={() => runAction(joinMatch)}
+                    />
 
-                {isParticipant && isActive ? (
-                    <ActionButton
-                        label="Leave match"
-                        variant="secondary"
-                        loading={submitting}
-                        onPress={() => runAction(leaveMatch)}
-                    />
-                ) : (
-                    <ActionButton
-                        label={canJoin ? 'Join match' : match.status}
-                        disabled={!canJoin}
-                        loading={submitting}
-                        onPress={() => runAction(joinMatch)}
-                    />
-                )}
+                    {error && <ThemedText style={styles.error}>{error}</ThemedText>}
 
-                {isOrganizer && isActive && (
-                    <ActionButton
-                        label={confirmCancel ? 'Tap again to cancel' : 'Cancel match'}
-                        variant="secondary"
-                        loading={submitting}
-                        onPress={onCancelPress}
-                    />
-                )}
+                    {isParticipant && isActive ? (
+                        <ActionButton
+                            label="Leave match"
+                            variant="secondary"
+                            loading={submitting}
+                            onPress={() => runAction(leaveMatch)}
+                        />
+                    ) : (
+                        <ActionButton
+                            label={canJoin ? 'Join match' : match.status}
+                            disabled={!canJoin}
+                            loading={submitting}
+                            onPress={() => runAction(joinMatch)}
+                        />
+                    )}
+
+                    {isOrganizer && isActive && (
+                        <ActionButton
+                            label={confirmCancel ? 'Tap again to cancel' : 'Cancel match'}
+                            variant="secondary"
+                            loading={submitting}
+                            onPress={onCancelPress}
+                        />
+                    )}
+                </ScrollView>
             </SafeAreaView>
         </ThemedView>
     );
@@ -172,8 +182,12 @@ const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
         maxWidth: MaxContentWidth,
+        paddingTop: TopTabInset,
+    },
+    content: {
         paddingHorizontal: Spacing.four,
-        paddingTop: TopTabInset + Spacing.four,
+        paddingTop: Spacing.four,
+        paddingBottom: BottomTabInset + Spacing.five,
         gap: Spacing.three,
     },
     centered: {
