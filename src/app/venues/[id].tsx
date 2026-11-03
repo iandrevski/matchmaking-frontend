@@ -13,6 +13,7 @@ import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constan
 import { formatAddress, formatPrice } from '@/utils/format';
 import { upcoming } from '@/utils/matches';
 import { sportEmoji } from '@/utils/sports';
+import {VenueGallery} from "@/components/venue-gallery";
 
 export default function VenueDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
@@ -103,6 +104,7 @@ export default function VenueDetailsScreen() {
                 <ScrollView contentContainerStyle={styles.content}>
                     <View>
                         <ThemedText type="subtitle">{venue.name}</ThemedText>
+                        <VenueGallery venue={venue} canEdit={isOwner} onChange={setVenue} />
                         <ThemedText themeColor="textSecondary">📍 {formatAddress(venue)}</ThemedText>
                         <ThemedText type="smallBold">💰 {formatPrice(venue.pricePerHour)}</ThemedText>
                     </View>
