@@ -112,3 +112,23 @@ export type NearbyMatch = {
     match: Match;
     distanceKm: number;
 };
+
+export type CountItem = {
+    label: string;
+    count: number;
+};
+
+export type VenueStats = {
+    totalMatches: number;
+    upcomingMatches: number;
+    finishedMatches: number;
+    cancelledMatches: number;
+    totalPlayers: number;
+    uniquePlayers: number;
+    fillRatePercent: number;
+    bookedHours: number;
+    bookedValue: number | null;
+    bySport: CountItem[];
+    byHour: CountItem[];
+    byWeekday: CountItem[];
+};

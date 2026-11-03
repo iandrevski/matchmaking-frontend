@@ -15,6 +15,7 @@ import { upcoming } from '@/utils/matches';
 import { sportEmoji } from '@/utils/sports';
 import {VenueGallery} from "@/components/venue-gallery";
 import {VenueAvailability} from "@/components/venue-availability";
+import {VenueStatsPanel} from "@/components/venue-stats-panel";
 
 export default function VenueDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
@@ -157,6 +158,7 @@ export default function VenueDetailsScreen() {
 
                     {error && <ThemedText style={styles.error}>{error}</ThemedText>}
 
+                    {isOwner && <VenueStatsPanel venueId={venue.id} />}
                     <VenueAvailability venue={venue} canBook={!isPartner} />
 
                     <View style={styles.section}>
