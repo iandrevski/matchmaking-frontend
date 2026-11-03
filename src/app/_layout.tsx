@@ -7,6 +7,7 @@ import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import AppTabs from '@/components/app-tabs';
 import { AuthScreen } from '@/components/auth-screen';
 import { ThemedView } from '@/components/themed-view';
+import { FavoritesProvider } from '@/favorites/favorites-context';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -29,10 +30,12 @@ export default function RootLayout() {
     const colorScheme = useColorScheme();
     return (
         <AuthProvider>
-            <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-                <AnimatedSplashOverlay />
-                <RootNavigator />
-            </ThemeProvider>
+            <FavoritesProvider>
+                <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+                    <AnimatedSplashOverlay />
+                    <RootNavigator />
+                </ThemeProvider>
+            </FavoritesProvider>
         </AuthProvider>
     );
 }

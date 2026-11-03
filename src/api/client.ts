@@ -1,7 +1,7 @@
 import type {
     ApiError,
     AuthResponse,
-    CreateMatchRequest,
+    CreateMatchRequest, Favorites,
     Match,
     MatchStatus,
     NearbyMatch,
@@ -220,3 +220,18 @@ export function deleteVenuePhoto(venueId: number, url: string) {
     const fileName = url.split('/').pop();
     return apiFetch<Venue>(`/venues/${venueId}/photos/${fileName}`, { method: 'DELETE' });
 }
+
+// ---------- Favorites ----------
+export const getFavorites = () => apiFetch<Favorites>('/players/me/favorites');
+
+export const addFavoriteVenue = (venueId: number) =>
+    apiFetch<Favorites>(`/players/me/favorites/venues/${venueId}`, { method: 'PUT' });
+
+export const removeFavoriteVenue = (venueId: number) =>
+    apiFetch<Favorites>(`/players/me/favorites/venues/${venueId}`, { method: 'DELETE' });
+
+export const addFavoriteMatch = (matchId: number) =>
+    apiFetch<Favorites>(`/players/me/favorites/matches/${matchId}`, { method: 'PUT' });
+
+export const removeFavoriteMatch = (matchId: number) =>
+    apiFetch<Favorites>(`/players/me/favorites/matches/${matchId}`, { method: 'DELETE' });

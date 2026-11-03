@@ -132,3 +132,8 @@ export type VenueStats = {
     byHour: CountItem[];
     byWeekday: CountItem[];
 };
+
+export type Favorites = {
+    venues: Venue[];
+    matches: Match[];
+};

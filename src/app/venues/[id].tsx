@@ -16,11 +16,14 @@ import { sportEmoji } from '@/utils/sports';
 import {VenueGallery} from "@/components/venue-gallery";
 import {VenueAvailability} from "@/components/venue-availability";
 import {VenueStatsPanel} from "@/components/venue-stats-panel";
+import { FavoriteButton } from '@/components/favorite-button';
+import { useFavorites } from '@/favorites/favorites-context';
 
 export default function VenueDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const venueId = Number(id);
     const { user } = useAuth();
+    const { isFavoriteVenue, toggleVenue } = useFavorites();
 
     const [venue, setVenue] = useState<Venue | null>(null);
     const [matches, setMatches] = useState<Match[]>([]);
@@ -104,9 +107,17 @@ export default function VenueDetailsScreen() {
         <ThemedView style={styles.container}>
             <SafeAreaView style={styles.safeArea}>
                 <ScrollView contentContainerStyle={styles.content}>
+                    <VenueGallery venue={venue} canEdit={isOwner} onChange={setVenue} />
+
                     <View>
-                        <ThemedText type="subtitle">{venue.name}</ThemedText>
-                        <VenueGallery venue={venue} canEdit={isOwner} onChange={setVenue} />
+                        <View style={styles.titleRow}>
+                            <ThemedText type="subtitle" style={styles.title}>
+                                {venue.name}
+                            </ThemedText>
+                            {!isPartner && (
+                                <FavoriteButton active={isFavoriteVenue(venue.id)} onToggle={() => toggleVenue(venue.id)} />
+                            )}
+                        </View>
                         <ThemedText themeColor="textSecondary">📍 {formatAddress(venue)}</ThemedText>
                         <ThemedText type="smallBold">💰 {formatPrice(venue.pricePerHour)}</ThemedText>
                     </View>
@@ -241,5 +252,14 @@ const styles = StyleSheet.create({
     },
     error: {
         color: '#e5484d',
+    },
+    titleRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: Spacing.two,
+    },
+    title: {
+        flex: 1,
     },
 });

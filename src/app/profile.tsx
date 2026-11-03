@@ -16,7 +16,9 @@ import { useAuth } from '@/auth/auth-context';
 import { MatchCard } from '@/components/match-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { VenueCard } from '@/components/venue-card';
 import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
+import { useFavorites } from '@/favorites/favorites-context';
 import { useTheme } from '@/hooks/use-theme';
 import { past } from '@/utils/matches';
 
@@ -32,6 +34,7 @@ function toText(value: number | null) {
 
 export default function ProfileScreen() {
     const { user, logout } = useAuth();
+    const favorites = useFavorites();
     const theme = useTheme();
 
     const [profile, setProfile] = useState<Player | null>(null);
@@ -170,6 +173,28 @@ export default function ProfileScreen() {
                                 <ThemedText style={styles.buttonText}>Save</ThemedText>
                             )}
                         </Pressable>
+                    </View>
+
+                    <View style={styles.section}>
+                        <ThemedText type="smallBold">Favorite venues</ThemedText>
+                        {favorites.venues.length === 0 ? (
+                            <ThemedText type="small" themeColor="textSecondary">
+                                Tap 🤍 on a venue to save it here.
+                            </ThemedText>
+                        ) : (
+                            favorites.venues.map((v) => <VenueCard key={v.id} venue={v} />)
+                        )}
+                    </View>
+
+                    <View style={styles.section}>
+                        <ThemedText type="smallBold">Saved matches</ThemedText>
+                        {favorites.matches.length === 0 ? (
+                            <ThemedText type="small" themeColor="textSecondary">
+                                Tap 🤍 on a match to save it here.
+                            </ThemedText>
+                        ) : (
+                            favorites.matches.map((m) => <MatchCard key={m.id} match={m} />)
+                        )}
                     </View>
 
                     <View style={styles.section}>

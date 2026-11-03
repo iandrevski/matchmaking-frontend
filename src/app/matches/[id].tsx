@@ -2,6 +2,9 @@ import { useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { View } from 'react-native';
+import { FavoriteButton } from '@/components/favorite-button';
+import { useFavorites } from '@/favorites/favorites-context';
 
 import { cancelMatch, getMatch, joinMatch, leaveMatch } from '@/api/client';
 import type { Match } from '@/api/types';
@@ -16,6 +19,7 @@ export default function MatchDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const matchId = Number(id);
     const { user } = useAuth();
+    const { isFavoriteMatch, toggleMatch } = useFavorites();
 
     const [match, setMatch] = useState<Match | null>(null);
     const [loading, setLoading] = useState(true);
@@ -81,8 +85,12 @@ export default function MatchDetailsScreen() {
         <ThemedView style={styles.container}>
             <SafeAreaView style={styles.safeArea}>
                 <ScrollView contentContainerStyle={styles.content}>
-                    <ThemedText type="subtitle">{match.sport.name}</ThemedText>
-
+                    <View style={styles.titleRow}>
+                        <ThemedText type="subtitle">{match.sport.name}</ThemedText>
+                        {user?.role === 'ROLE_USER' && (
+                            <FavoriteButton active={isFavoriteMatch(match.id)} onToggle={() => toggleMatch(match.id)} />
+                        )}
+                    </View>
                     <ThemedView type="backgroundElement" style={styles.card}>
                         <Row label="Venue" value={match.venueName} />
                         <Row label="When" value={formatMatchDate(match.dateFrom, 'long')} />
@@ -226,5 +234,10 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         color: '#ffffff',
+    },
+    titleRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
 });
