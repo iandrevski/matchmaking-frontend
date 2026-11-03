@@ -8,6 +8,7 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { formatMatchDate, formatTime } from '@/utils/format';
 import { sportEmoji } from '@/utils/sports';
+import {useFavorites} from "@/favorites/favorites-context";
 
 const STATUS_COLORS: Record<MatchStatus, string> = {
     OPEN: '#30a46c',
@@ -26,6 +27,7 @@ export function MatchCard({ match, linked = true }: Props) {
     const max = match.sport.numberOfPlayers;
     const fill = Math.min(match.participantsCount / max, 1);
     const spotsLeft = Math.max(max - match.participantsCount, 0);
+    const { isFavoriteMatch } = useFavorites();
 
     const card = (
         <ThemedView type="backgroundElement" style={styles.card}>
@@ -38,6 +40,9 @@ export function MatchCard({ match, linked = true }: Props) {
                         {match.venueName}
                     </ThemedText>
                 </View>
+
+                {isFavoriteMatch(match.id) && <ThemedText>❤️</ThemedText>}
+
                 <View style={[styles.badge, { backgroundColor: STATUS_COLORS[match.status] }]}>
                     <ThemedText style={styles.badgeText}>{match.status}</ThemedText>
                 </View>
