@@ -11,7 +11,7 @@ import type {
     UpdatePlayerRequest,
     User,
     Venue,
-    VenueRequest,
+    VenueRequest, VenueStats,
 } from './types';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -116,6 +116,8 @@ export const updateVenue = (id: number, body: VenueRequest) =>
     apiFetch<Venue>(`/venues/${id}`, { method: 'PUT', body: JSON.stringify(body) });
 
 export const deleteVenue = (id: number) => apiFetch<void>(`/venues/${id}`, { method: 'DELETE' });
+
+export const getVenueStats = (id: number) => apiFetch<VenueStats>(`/venues/${id}/stats`);
 
 // ---------- Matches ----------
 export type MatchFilters = {
