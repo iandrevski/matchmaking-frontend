@@ -36,6 +36,7 @@ export type Venue = {
     address: string | null;
     latitude: number | null;
     longitude: number | null;
+    pricePerHour: number | null;
     ownerId: number;
     sports: Sport[];
 };
@@ -102,6 +103,7 @@ export type VenueRequest = {
     address: string | null;
     latitude: number | null;
     longitude: number | null;
+    pricePerHour: number | null;
     sportIds: number[];
 };
 

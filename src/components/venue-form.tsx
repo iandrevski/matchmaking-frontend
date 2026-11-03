@@ -33,6 +33,7 @@ export function VenueForm({ title, submitLabel, initial, onSubmit }: Props) {
     const [address, setAddress] = useState(initial?.address ?? '');
     const [latitude, setLatitude] = useState(initial?.latitude?.toString() ?? '');
     const [longitude, setLongitude] = useState(initial?.longitude?.toString() ?? '');
+    const [price, setPrice] = useState(initial?.pricePerHour?.toString() ?? '');
     const [sportIds, setSportIds] = useState<number[]>(initial?.sports.map((s) => s.id) ?? []);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -55,6 +56,12 @@ export function VenueForm({ title, submitLabel, initial, onSubmit }: Props) {
             return;
         }
 
+        const pricePerHour = price.trim() === '' ? null : Number(price);
+        if (pricePerHour !== null && (!Number.isInteger(pricePerHour) || pricePerHour < 0)) {
+            setError('Price must be a whole number');
+            return;
+        }
+
         setSubmitting(true);
         setError(null);
         try {
@@ -65,6 +72,7 @@ export function VenueForm({ title, submitLabel, initial, onSubmit }: Props) {
                 address: address.trim() || null,
                 latitude: lat,
                 longitude: lng,
+                pricePerHour,
                 sportIds,
             });
         } catch (e) {
@@ -97,6 +105,7 @@ export function VenueForm({ title, submitLabel, initial, onSubmit }: Props) {
                     {field('Address', address, setAddress)}
                     {field('Latitude (e.g. 41.9856)', latitude, setLatitude)}
                     {field('Longitude (e.g. 21.4640)', longitude, setLongitude)}
+                    {field('Price per hour (MKD)', price, setPrice)}
 
                     <View style={styles.section}>
                         <ThemedText type="smallBold">Sports</ThemedText>
