@@ -3,12 +3,15 @@ import type {
     AuthResponse,
     CreateMatchRequest,
     Match,
-    MatchStatus, NearbyMatch,
+    MatchStatus,
+    NearbyMatch,
     Player,
     RegisterRequest,
-    Sport, UpdatePlayerRequest,
+    Sport,
+    UpdatePlayerRequest,
     User,
-    Venue, VenueRequest,
+    Venue,
+    VenueRequest,
 } from './types';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -36,7 +39,8 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
         response = await fetch(`${API_URL}${path}`, {
             ...options,
             headers: {
-                'Content-Type': 'application/json',
+                // за FormData (слики) Content-Type го поставува самиот fetch, со boundary
+                ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
                 ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
                 ...options.headers,
             },
@@ -86,13 +90,13 @@ export const registerPlayer = (body: RegisterRequest) =>
         body: JSON.stringify(body),
     });
 
-export const getMe = () => apiFetch<User>('/auth/me');
-
 export const registerPartner = (body: RegisterRequest) =>
     apiFetch<AuthResponse>('/auth/register/partner', {
         method: 'POST',
         body: JSON.stringify(body),
     });
+
+export const getMe = () => apiFetch<User>('/auth/me');
 
 // ---------- Sports ----------
 export const getSports = () => apiFetch<Sport[]>('/sports');
@@ -112,15 +116,13 @@ export const updateVenue = (id: number, body: VenueRequest) =>
     apiFetch<Venue>(`/venues/${id}`, { method: 'PUT', body: JSON.stringify(body) });
 
 export const deleteVenue = (id: number) => apiFetch<void>(`/venues/${id}`, { method: 'DELETE' });
+
 // ---------- Matches ----------
 export type MatchFilters = {
     sportId?: number | null;
     status?: MatchStatus | null;
     date?: string | null;
 };
-
-export const getVenueMatches = (venueId: number) =>
-    apiFetch<Match[]>(`/matches/venue/${venueId}`);
 
 export const getMatches = (filters: MatchFilters = {}) => {
     const params = new URLSearchParams();
@@ -140,6 +142,12 @@ export const getMatchDays = (from: string, to: string, sportId?: number | null) 
 export const getOpenMatches = () => apiFetch<Match[]>('/matches?status=OPEN');
 export const getMatch = (id: number) => apiFetch<Match>(`/matches/${id}`);
 
+export const getVenueMatches = (venueId: number) =>
+    apiFetch<Match[]>(`/matches/venue/${venueId}`);
+
+export const getNearbyMatches = (lat: number, lng: number, radiusKm: number) =>
+    apiFetch<NearbyMatch[]>(`/matches/nearby?lat=${lat}&lng=${lng}&radiusKm=${radiusKm}`);
+
 // играчот е најавениот корисник, backend-от го зема од токенот
 export const joinMatch = (matchId: number) =>
     apiFetch<Match>(`/matches/${matchId}/join`, { method: 'POST' });
@@ -156,11 +164,9 @@ export const createMatch = (body: CreateMatchRequest) =>
         body: JSON.stringify(body),
     });
 
-export const getNearbyMatches = (lat: number, lng: number, radiusKm: number) =>
-    apiFetch<NearbyMatch[]>(`/matches/nearby?lat=${lat}&lng=${lng}&radiusKm=${radiusKm}`);
-
 // ---------- Players ----------
 export const getPlayer = (id: number) => apiFetch<Player>(`/players/${id}`);
+
 export const getPlayerMatches = (playerId: number) =>
     apiFetch<Match[]>(`/matches/player/${playerId}`);
 
@@ -177,3 +183,31 @@ export const updateMyLocation = (lat: number, lng: number) =>
         method: 'PUT',
         body: JSON.stringify({ lat, lng }),
     });
+
+// ---------- Photos ----------
+// "/uploads/venues/x.jpg" → целосна адреса на серверот
+export function photoUrl(path: string) {
+    return `${(API_URL ?? '').replace(/\/api$/, '')}${path}`;
+}
+
+type PickedPhoto = { uri: string; mimeType?: string | null; fileName?: string | null; file?: File };
+
+export function uploadVenuePhoto(venueId: number, photo: PickedPhoto) {
+    const form = new FormData();
+    if (photo.file) {
+        form.append('file', photo.file); // web: вистински File
+    } else {
+        // телефон: React Native го праќа фајлот од uri
+        form.append('file', {
+            uri: photo.uri,
+            name: photo.fileName ?? 'photo.jpg',
+            type: photo.mimeType ?? 'image/jpeg',
+        } as unknown as Blob);
+    }
+    return apiFetch<Venue>(`/venues/${venueId}/photos`, { method: 'POST', body: form });
+}
+
+export function deleteVenuePhoto(venueId: number, url: string) {
+    const fileName = url.split('/').pop();
+    return apiFetch<Venue>(`/venues/${venueId}/photos/${fileName}`, { method: 'DELETE' });
+}

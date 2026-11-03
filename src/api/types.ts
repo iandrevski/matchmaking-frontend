@@ -37,6 +37,7 @@ export type Venue = {
     latitude: number | null;
     longitude: number | null;
     pricePerHour: number | null;
+    photoUrls: string[];
     ownerId: number;
     sports: Sport[];
 };
