@@ -120,6 +120,7 @@ export const deleteVenue = (id: number) => apiFetch<void>(`/venues/${id}`, { met
 // ---------- Matches ----------
 export type MatchFilters = {
     sportId?: number | null;
+    venueId?: number | null;
     status?: MatchStatus | null;
     date?: string | null;
 };
@@ -127,18 +128,24 @@ export type MatchFilters = {
 export const getMatches = (filters: MatchFilters = {}) => {
     const params = new URLSearchParams();
     if (filters.sportId) params.append('sportId', String(filters.sportId));
+    if (filters.venueId) params.append('venueId', String(filters.venueId));
     if (filters.status) params.append('status', filters.status);
     if (filters.date) params.append('date', filters.date);
     const query = params.toString();
     return apiFetch<Match[]>(`/matches${query ? `?${query}` : ''}`);
 };
 
-export const getMatchDays = (from: string, to: string, sportId?: number | null) => {
+export const getMatchDays = (
+    from: string,
+    to: string,
+    sportId?: number | null,
+    venueId?: number | null,
+) => {
     const params = new URLSearchParams({ from, to });
     if (sportId) params.append('sportId', String(sportId));
+    if (venueId) params.append('venueId', String(venueId));
     return apiFetch<string[]>(`/matches/days?${params.toString()}`);
 };
-
 export const getOpenMatches = () => apiFetch<Match[]>('/matches?status=OPEN');
 export const getMatch = (id: number) => apiFetch<Match>(`/matches/${id}`);
 

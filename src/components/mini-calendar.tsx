@@ -14,10 +14,12 @@ const ACCENT = '#3c87f7';
 type Props = {
     selectedDate: string | null;
     onSelect: (date: string | null) => void;
-    sportId: number | null;
+    sportId?: number | null;
+    venueId?: number | null;
+    clearable?: boolean; // false: секогаш има избран ден (за распоред на терен)
 };
 
-export function MiniCalendar({ selectedDate, onSelect, sportId }: Props) {
+export function MiniCalendar({ selectedDate, onSelect, sportId = null, venueId = null, clearable = true}: Props) {
     const theme = useTheme();
     const [anchor, setAnchor] = useState(() => new Date());
     const [expanded, setExpanded] = useState(false);
@@ -30,8 +32,8 @@ export function MiniCalendar({ selectedDate, onSelect, sportId }: Props) {
 
     // точките секогаш важат за прикажаниот период и избраниот спорт
     useEffect(() => {
-        getMatchDays(from, to, sportId).then(setMatchDays).catch(() => setMatchDays([]));
-    }, [from, to, sportId]);
+        getMatchDays(from, to, sportId, venueId).then(setMatchDays).catch(() => setMatchDays([]));
+    }, [from, to, sportId, venueId]);
 
     function move(direction: number) {
         setAnchor(expanded ? addMonths(anchor, direction) : addDays(anchor, direction * 7));
@@ -55,7 +57,7 @@ export function MiniCalendar({ selectedDate, onSelect, sportId }: Props) {
                 </Pressable>
 
                 <View style={styles.actions}>
-                    {selectedDate ? (
+                    {selectedDate && clearable ? (
                         <Pressable onPress={() => onSelect(null)} style={styles.textButton}>
                             <ThemedText type="small" style={styles.accentText}>
                                 All dates
