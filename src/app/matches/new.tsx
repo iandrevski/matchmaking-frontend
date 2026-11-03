@@ -32,8 +32,8 @@ function dayLabel(day: Date, index: number) {
 }
 
 export default function NewMatchScreen() {
-    // ако дошле од Venue → ?sportId=1&venueId=2
-    const params = useLocalSearchParams<{ sportId?: string; venueId?: string }>();
+    // од Venue: ?sportId=1&venueId=2, од распоредот и &date=2026-11-05&hour=20
+    const params = useLocalSearchParams<{ sportId?: string; venueId?: string; date?: string; hour?: string }>();
 
     const [sports, setSports] = useState<Sport[]>([]);
     const [sportId, setSportId] = useState<number | null>(
@@ -42,8 +42,20 @@ export default function NewMatchScreen() {
     const [venues, setVenues] = useState<Venue[]>([]);
     const [venueId, setVenueId] = useState<number | null>(null);
     const [loadingVenues, setLoadingVenues] = useState(false);
-    const [dayIndex, setDayIndex] = useState(1); // default: утре
-    const [hour, setHour] = useState(18);
+    const [dayIndex, setDayIndex] = useState(() => {
+        if (!params.date) return 1; // default: утре
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const diff = Math.round(
+            (new Date(`${params.date}T00:00:00`).getTime() - today.getTime()) / 86_400_000,
+        );
+        // формата нуди само 7 дена; подоцнежен датум → утре
+        return diff >= 0 && diff < 7 ? diff : 1;
+    });
+    const [hour, setHour] = useState(() => {
+        const fromParams = Number(params.hour);
+        return HOURS.includes(fromParams) ? fromParams : 18;
+    });
     const [duration, setDuration] = useState(90);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);

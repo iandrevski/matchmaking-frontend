@@ -14,6 +14,7 @@ import { formatAddress, formatPrice } from '@/utils/format';
 import { upcoming } from '@/utils/matches';
 import { sportEmoji } from '@/utils/sports';
 import {VenueGallery} from "@/components/venue-gallery";
+import {VenueAvailability} from "@/components/venue-availability";
 
 export default function VenueDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
@@ -155,6 +156,8 @@ export default function VenueDetailsScreen() {
                     </View>
 
                     {error && <ThemedText style={styles.error}>{error}</ThemedText>}
+
+                    <VenueAvailability venue={venue} canBook={!isPartner} />
 
                     <View style={styles.section}>
                         <ThemedText type="smallBold">Upcoming matches</ThemedText>
