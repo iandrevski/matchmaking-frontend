@@ -27,3 +27,7 @@ export function toLocalIsoString(date: Date) {
 export function formatAddress(venue: { address: string | null; municipality: string | null; city: string | null }) {
     return [venue.address, venue.municipality, venue.city].filter(Boolean).join(', ') || 'No address';
 }
+
+export function formatPrice(pricePerHour: number | null) {
+    return pricePerHour === null ? 'Price on request' : `${pricePerHour} MKD/h`;
+}

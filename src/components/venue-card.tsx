@@ -5,7 +5,7 @@ import type { Venue } from '@/api/types';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { formatAddress } from '@/utils/format';
+import {formatAddress, formatPrice} from '@/utils/format';
 import { sportEmoji } from '@/utils/sports';
 
 export function VenueCard({ venue }: { venue: Venue }) {
@@ -17,6 +17,8 @@ export function VenueCard({ venue }: { venue: Venue }) {
                     <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
                         📍 {formatAddress(venue)}
                     </ThemedText>
+                    <ThemedText type="smallBold">💰 {formatPrice(venue.pricePerHour)}</ThemedText>
+
                     <View style={styles.sports}>
                         {venue.sports.map((sport) => (
                             <ThemedView key={sport.id} type="backgroundSelected" style={styles.pill}>

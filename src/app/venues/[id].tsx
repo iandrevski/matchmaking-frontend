@@ -10,7 +10,7 @@ import { MatchCard } from '@/components/match-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
-import { formatAddress } from '@/utils/format';
+import { formatAddress, formatPrice } from '@/utils/format';
 import { upcoming } from '@/utils/matches';
 import { sportEmoji } from '@/utils/sports';
 
@@ -104,6 +104,7 @@ export default function VenueDetailsScreen() {
                     <View>
                         <ThemedText type="subtitle">{venue.name}</ThemedText>
                         <ThemedText themeColor="textSecondary">📍 {formatAddress(venue)}</ThemedText>
+                        <ThemedText type="smallBold">💰 {formatPrice(venue.pricePerHour)}</ThemedText>
                     </View>
 
                     <View style={styles.sports}>
