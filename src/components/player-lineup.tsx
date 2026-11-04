@@ -15,8 +15,8 @@ const SURFACES: Record<string, string> = {
 
 const AVATAR_COLORS = ['#e5484d', '#8e4ec6', '#3e63dd', '#0090ff', '#12a594', '#f76b15', '#d6409f', '#6e56cf'];
 
-// исто име → секогаш иста боја
-function avatarColor(username: string) {
+// исто име → секогаш иста боја (се користи и на профилот на играч)
+export function avatarColor(username: string) {
     const hash = [...username].reduce((sum, char) => sum + char.charCodeAt(0), 0);
     return AVATAR_COLORS.at(hash % AVATAR_COLORS.length);
 }
@@ -26,6 +26,7 @@ type Props = {
     currentUserId?: number;
     canJoin: boolean;
     onJoin: () => void;
+    onPlayerPress?: (playerId: number) => void;
 };
 
 type TokenProps = {
@@ -34,9 +35,10 @@ type TokenProps = {
     isYou: boolean;
     canJoin: boolean;
     onJoin: () => void;
+    onPlayerPress?: (playerId: number) => void;
 };
 
-function PlayerToken({ participant, isOrganizer, isYou, canJoin, onJoin }: TokenProps) {
+function PlayerToken({ participant, isOrganizer, isYou, canJoin, onJoin, onPlayerPress }: TokenProps) {
     if (!participant) {
         return (
             <Pressable
@@ -52,7 +54,11 @@ function PlayerToken({ participant, isOrganizer, isYou, canJoin, onJoin }: Token
     }
 
     return (
-        <View style={styles.token}>
+        <Pressable
+            onPress={() => onPlayerPress?.(participant.id)}
+            disabled={!onPlayerPress}
+            accessibilityLabel={`Open profile of ${participant.username}`}
+            style={({ pressed }) => [styles.token, pressed && styles.pressed]}>
             <View
                 style={[
                     styles.avatar,
@@ -65,11 +71,11 @@ function PlayerToken({ participant, isOrganizer, isYou, canJoin, onJoin }: Token
             <ThemedText style={styles.name} numberOfLines={1}>
                 {isYou ? 'YOU' : participant.username}
             </ThemedText>
-        </View>
+        </Pressable>
     );
 }
 
-export function PlayerLineup({ match, currentUserId, canJoin, onJoin }: Props) {
+export function PlayerLineup({ match, currentUserId, canJoin, onJoin, onPlayerPress }: Props) {
     const capacity = Math.max(match.sport.numberOfPlayers, match.participants.length);
     const slots: (Participant | null)[] = Array.from(
         { length: capacity },
@@ -96,6 +102,7 @@ export function PlayerLineup({ match, currentUserId, canJoin, onJoin }: Props) {
                             isYou={participant?.id === currentUserId}
                             canJoin={canJoin}
                             onJoin={onJoin}
+                            onPlayerPress={onPlayerPress}
                         />
                     ))}
                 </View>

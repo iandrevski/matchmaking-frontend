@@ -6,18 +6,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { deleteVenue, getVenue, getVenueMatches } from '@/api/client';
 import type { Match, Venue } from '@/api/types';
 import { useAuth } from '@/auth/auth-context';
+import { FavoriteButton } from '@/components/favorite-button';
 import { MatchCard } from '@/components/match-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { VenueAvailability } from '@/components/venue-availability';
+import { VenueGallery } from '@/components/venue-gallery';
+import { VenueReviews } from '@/components/venue-reviews';
+import { VenueStatsPanel } from '@/components/venue-stats-panel';
 import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
+import { useFavorites } from '@/favorites/favorites-context';
 import { formatAddress, formatPrice } from '@/utils/format';
 import { upcoming } from '@/utils/matches';
 import { sportEmoji } from '@/utils/sports';
-import {VenueGallery} from "@/components/venue-gallery";
-import {VenueAvailability} from "@/components/venue-availability";
-import {VenueStatsPanel} from "@/components/venue-stats-panel";
-import { FavoriteButton } from '@/components/favorite-button';
-import { useFavorites } from '@/favorites/favorites-context';
 
 export default function VenueDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
@@ -182,6 +183,8 @@ export default function VenueDetailsScreen() {
                             matches.map((m) => <MatchCard key={m.id} match={m} linked={!isPartner} />)
                         )}
                     </View>
+
+                    <VenueReviews venueId={venue.id} />
                 </ScrollView>
             </SafeAreaView>
         </ThemedView>
@@ -209,6 +212,15 @@ const styles = StyleSheet.create({
         paddingTop: Spacing.four,
         paddingBottom: BottomTabInset + Spacing.five,
         gap: Spacing.four,
+    },
+    titleRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        gap: Spacing.two,
+    },
+    title: {
+        flex: 1,
     },
     sports: {
         flexDirection: 'row',
@@ -252,14 +264,5 @@ const styles = StyleSheet.create({
     },
     error: {
         color: '#e5484d',
-    },
-    titleRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: Spacing.two,
-    },
-    title: {
-        flex: 1,
     },
 });

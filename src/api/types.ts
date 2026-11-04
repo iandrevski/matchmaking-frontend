@@ -137,3 +137,35 @@ export type Favorites = {
     venues: Venue[];
     matches: Match[];
 };
+
+
+
+// ---------- Оценки ----------
+export type ReviewTag = 'ON_TIME' | 'GOOD_TEAMMATE' | 'FAIR_PLAY' | 'SKILLED';
+
+export type MyMatchReviews = {
+    canReview: boolean;
+    reviewableUntil: string;
+    players: { playerId: number; stars: number; tags: ReviewTag[] }[];
+    venue: { stars: number; comment: string | null } | null;
+};
+
+export type ReviewInput = {
+    players: { playerId: number; stars: number; tags: ReviewTag[] }[];
+    venue: { stars: number; comment: string | null } | null;
+};
+
+export type PlayerReviewSummary = {
+    playerId: number;
+    username: string;
+    reviewCount: number;
+    averageStars: number | null; // null додека нема доволно оценки → „New player“
+    tags: { tag: ReviewTag; count: number }[];
+    matchesPlayed: number;
+};
+
+export type VenueReviews = {
+    averageStars: number | null;
+    reviewCount: number;
+    reviews: { id: number; author: string; stars: number; comment: string | null; date: string }[];
+};
