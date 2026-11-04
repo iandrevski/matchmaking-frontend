@@ -8,6 +8,7 @@ import AppTabs from '@/components/app-tabs';
 import { AuthScreen } from '@/components/auth-screen';
 import { ThemedView } from '@/components/themed-view';
 import { FavoritesProvider } from '@/favorites/favorites-context';
+import {NotificationsProvider} from "@/notifications/notifications-context";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -31,10 +32,12 @@ export default function RootLayout() {
     return (
         <AuthProvider>
             <FavoritesProvider>
-                <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-                    <AnimatedSplashOverlay />
-                    <RootNavigator />
-                </ThemeProvider>
+                <NotificationsProvider>
+                    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+                        <AnimatedSplashOverlay />
+                        <RootNavigator />
+                    </ThemeProvider>
+                </NotificationsProvider>
             </FavoritesProvider>
         </AuthProvider>
     );

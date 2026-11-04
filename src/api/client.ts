@@ -1,5 +1,5 @@
 import type {
-    ApiError,
+    ApiError, AppNotification,
     AuthResponse,
     CreateMatchRequest, Favorites,
     Match,
@@ -255,3 +255,14 @@ export const getMessages = (matchId: number, after?: number | null) =>
 
 export const sendMessage = (matchId: number, text: string) =>
     apiFetch<Message>(`/matches/${matchId}/messages`, { method: 'POST', body: JSON.stringify({ text }) });
+
+// ---------- Notifications ----------
+export const getNotifications = () => apiFetch<AppNotification[]>('/notifications');
+
+export const getUnreadCount = () => apiFetch<{ count: number }>('/notifications/unread-count');
+
+export const markNotificationRead = (id: number) =>
+    apiFetch<AppNotification>(`/notifications/${id}/read`, { method: 'POST' });
+
+export const markAllNotificationsRead = () =>
+    apiFetch<{ count: number }>('/notifications/read-all', { method: 'POST' });
