@@ -14,6 +14,7 @@ import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
 import { useFavorites } from '@/favorites/favorites-context';
 import { formatMatchDate } from '@/utils/format';
+import {LobbyChatCard} from "@/components/lobby-chat-card";
 
 export default function MatchDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
@@ -106,6 +107,8 @@ export default function MatchDetailsScreen() {
                         />
                         <Row label="Status" value={match.status} />
                     </ThemedView>
+
+                    {isParticipant && <LobbyChatCard matchId={match.id} />}
 
                     {/* оценувањето е најважно по завршен натпревар, затоа е горе */}
                     {match.status === 'FINISHED' && isParticipant && user && (
