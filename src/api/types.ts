@@ -177,3 +177,23 @@ export type Message = {
     text: string;
     createdAt: string;
 };
+// ---------- Notifications ----------
+export type NotificationType =
+    | 'PLAYER_JOINED'
+    | 'MATCH_FULL'
+    | 'MATCH_CANCELLED'
+    | 'MATCH_REMINDER'
+    | 'REVIEW_REQUEST'
+    | 'NEW_MESSAGE';
+
+// AppNotification, бидејќи "Notification" веќе постои во browser-от
+export type AppNotification = {
+    id: number;
+    type: NotificationType;
+    title: string;
+    body: string;
+    matchId: number | null;
+    count: number;
+    read: boolean;
+    createdAt: string;
+};

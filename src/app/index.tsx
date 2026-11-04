@@ -21,6 +21,7 @@ import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constan
 import { upcoming } from '@/utils/matches';
 import { sportEmoji } from '@/utils/sports';
 import { NearbyMatches } from '@/components/nearby-matches';
+import {NotificationBell} from "@/components/notification-bell";
 
 // различен Home според улогата
 export default function HomeScreen() {
@@ -82,9 +83,12 @@ function PlayerHome() {
               contentContainerStyle={styles.content}
               refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
             {/* поздрав */}
-            <View>
-              <ThemedText type="subtitle">Hi, {user?.username} 👋</ThemedText>
-              <ThemedText themeColor="textSecondary">Ready for a game?</ThemedText>
+            <View style={styles.greeting}>
+              <View>
+                <ThemedText type="subtitle">Hi, {user?.username} 👋</ThemedText>
+                <ThemedText themeColor="textSecondary">Ready for a game?</ThemedText>
+              </View>
+              <NotificationBell />
             </View>
 
             {error && <ThemedText style={styles.error}>{error}</ThemedText>}
@@ -242,5 +246,10 @@ const styles = StyleSheet.create({
   sportEmoji: {
     fontSize: 28,
     lineHeight: 34,
+  },
+  greeting: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
 });
