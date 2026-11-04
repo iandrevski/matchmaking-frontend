@@ -3,7 +3,7 @@ import type {
     AuthResponse,
     CreateMatchRequest, Favorites,
     Match,
-    MatchStatus, MyMatchReviews,
+    MatchStatus, Message, MyMatchReviews,
     NearbyMatch,
     Player, PlayerReviewSummary,
     RegisterRequest, ReviewInput,
@@ -247,3 +247,11 @@ export const getPlayerReviewSummary = (playerId: number) =>
     apiFetch<PlayerReviewSummary>(`/players/${playerId}/reviews/summary`);
 
 export const getVenueReviews = (venueId: number) => apiFetch<VenueReviews>(`/venues/${venueId}/reviews`);
+
+// ---------- Chat ----------
+// after = id на последната порака што ја имаме; без него → последните 50
+export const getMessages = (matchId: number, after?: number | null) =>
+    apiFetch<Message[]>(`/matches/${matchId}/messages${after ? `?after=${after}` : ''}`);
+
+export const sendMessage = (matchId: number, text: string) =>
+    apiFetch<Message>(`/matches/${matchId}/messages`, { method: 'POST', body: JSON.stringify({ text }) });

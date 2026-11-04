@@ -169,3 +169,11 @@ export type VenueReviews = {
     reviewCount: number;
     reviews: { id: number; author: string; stars: number; comment: string | null; date: string }[];
 };
+// ---------- Chat ----------
+export type Message = {
+    id: number;
+    senderId: number;
+    senderUsername: string;
+    text: string;
+    createdAt: string;
+};
