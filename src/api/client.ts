@@ -3,15 +3,15 @@ import type {
     AuthResponse,
     CreateMatchRequest, Favorites,
     Match,
-    MatchStatus,
+    MatchStatus, MyMatchReviews,
     NearbyMatch,
-    Player,
-    RegisterRequest,
+    Player, PlayerReviewSummary,
+    RegisterRequest, ReviewInput,
     Sport,
     UpdatePlayerRequest,
     User,
     Venue,
-    VenueRequest, VenueStats,
+    VenueRequest, VenueReviews, VenueStats,
 } from './types';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -235,3 +235,15 @@ export const addFavoriteMatch = (matchId: number) =>
 
 export const removeFavoriteMatch = (matchId: number) =>
     apiFetch<Favorites>(`/players/me/favorites/matches/${matchId}`, { method: 'DELETE' });
+
+// ---------- Reviews ----------
+export const getMyMatchReviews = (matchId: number) =>
+    apiFetch<MyMatchReviews>(`/matches/${matchId}/reviews/mine`);
+
+export const submitMatchReviews = (matchId: number, body: ReviewInput) =>
+    apiFetch<MyMatchReviews>(`/matches/${matchId}/reviews`, { method: 'PUT', body: JSON.stringify(body) });
+
+export const getPlayerReviewSummary = (playerId: number) =>
+    apiFetch<PlayerReviewSummary>(`/players/${playerId}/reviews/summary`);
+
+export const getVenueReviews = (venueId: number) => apiFetch<VenueReviews>(`/venues/${venueId}/reviews`);

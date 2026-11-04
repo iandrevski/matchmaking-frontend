@@ -1,18 +1,18 @@
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View } from 'react-native';
-import { FavoriteButton } from '@/components/favorite-button';
-import { useFavorites } from '@/favorites/favorites-context';
 
 import { cancelMatch, getMatch, joinMatch, leaveMatch } from '@/api/client';
 import type { Match } from '@/api/types';
 import { useAuth } from '@/auth/auth-context';
+import { FavoriteButton } from '@/components/favorite-button';
 import { PlayerLineup } from '@/components/player-lineup';
+import { RateMatch } from '@/components/rate-match';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
+import { useFavorites } from '@/favorites/favorites-context';
 import { formatMatchDate } from '@/utils/format';
 
 export default function MatchDetailsScreen() {
@@ -60,6 +60,10 @@ export default function MatchDetailsScreen() {
         runAction(cancelMatch);
     }
 
+    function openPlayer(playerId: number) {
+        router.push({ pathname: '/matches/player/[id]', params: { id: playerId } });
+    }
+
     if (loading) {
         return (
             <ThemedView style={styles.centered}>
@@ -91,6 +95,7 @@ export default function MatchDetailsScreen() {
                             <FavoriteButton active={isFavoriteMatch(match.id)} onToggle={() => toggleMatch(match.id)} />
                         )}
                     </View>
+
                     <ThemedView type="backgroundElement" style={styles.card}>
                         <Row label="Venue" value={match.venueName} />
                         <Row label="When" value={formatMatchDate(match.dateFrom, 'long')} />
@@ -102,12 +107,21 @@ export default function MatchDetailsScreen() {
                         <Row label="Status" value={match.status} />
                     </ThemedView>
 
+                    {/* оценувањето е најважно по завршен натпревар, затоа е горе */}
+                    {match.status === 'FINISHED' && isParticipant && user && (
+                        <RateMatch match={match} currentUserId={user.id} />
+                    )}
+
                     <PlayerLineup
                         match={match}
                         currentUserId={user?.id}
                         canJoin={canJoin && !submitting}
                         onJoin={() => runAction(joinMatch)}
+                        onPlayerPress={openPlayer}
                     />
+                    <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
+                        Tap a player to see their profile.
+                    </ThemedText>
 
                     {error && <ThemedText style={styles.error}>{error}</ThemedText>}
 
@@ -203,6 +217,11 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    titleRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
     card: {
         padding: Spacing.three,
         borderRadius: Spacing.three,
@@ -211,6 +230,10 @@ const styles = StyleSheet.create({
     row: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+    },
+    hint: {
+        textAlign: 'center',
+        marginTop: -Spacing.two,
     },
     error: {
         color: '#e5484d',
@@ -234,10 +257,5 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         color: '#ffffff',
-    },
-    titleRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
     },
 });
