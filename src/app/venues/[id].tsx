@@ -14,7 +14,7 @@ import { VenueAvailability } from '@/components/venue-availability';
 import { VenueGallery } from '@/components/venue-gallery';
 import { VenueReviews } from '@/components/venue-reviews';
 import { VenueStatsPanel } from '@/components/venue-stats-panel';
-import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
+import { BottomTabInset, Brand, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
 import { useFavorites } from '@/favorites/favorites-context';
 import { formatAddress, formatPrice } from '@/utils/format';
 import { upcoming } from '@/utils/matches';
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
     },
     buttonPrimary: {
-        backgroundColor: '#3c87f7',
+        backgroundColor: Brand.primary,
         paddingVertical: Spacing.three,
         alignItems: 'center',
     },

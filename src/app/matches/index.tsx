@@ -10,7 +10,7 @@ import { MiniCalendar } from '@/components/mini-calendar';
 import { SportFilter } from '@/components/sport-filter';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
+import { BottomTabInset, Brand, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
 
 export default function MatchesScreen() {
     const params = useLocalSearchParams<{ sportId?: string }>();
@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     newButton: {
-        backgroundColor: '#3c87f7',
+        backgroundColor: Brand.primary,
         paddingHorizontal: Spacing.three,
         paddingVertical: Spacing.two,
         borderRadius: Spacing.three,

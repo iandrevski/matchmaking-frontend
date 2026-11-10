@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import type { Match } from '@/api/types';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Brand, Spacing } from '@/constants/theme';
 import { formatTime } from '@/utils/format';
 import { sportEmoji } from '@/utils/sports';
 
@@ -103,13 +103,13 @@ const styles = StyleSheet.create({
         fontWeight: 600,
     },
     free: {
-        backgroundColor: 'rgba(48,164,108,0.12)',
+        backgroundColor: 'rgba(46,139,87,0.12)',
         borderWidth: 1,
         borderStyle: 'dashed',
-        borderColor: '#30a46c',
+        borderColor: Brand.success,
     },
     freeText: {
-        color: '#30a46c',
+        color: Brand.success,
     },
     past: {
         opacity: 0.4,

@@ -4,12 +4,12 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { getMatchDays } from '@/api/client';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Brand, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { addDays, addMonths, monthDays, toIsoDate, weekDays } from '@/utils/calendar';
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const ACCENT = '#3c87f7';
+const ACCENT = Brand.primary;
 
 type Props = {
     selectedDate: string | null;
@@ -59,13 +59,13 @@ export function MiniCalendar({ selectedDate, onSelect, sportId = null, venueId =
                 <View style={styles.actions}>
                     {selectedDate && clearable ? (
                         <Pressable onPress={() => onSelect(null)} style={styles.textButton}>
-                            <ThemedText type="small" style={styles.accentText}>
+                            <ThemedText type="small" themeColor="tint" style={styles.accentText}>
                                 All dates
                             </ThemedText>
                         </Pressable>
                     ) : (
                         <Pressable onPress={goToToday} style={styles.textButton}>
-                            <ThemedText type="small" style={styles.accentText}>
+                            <ThemedText type="small" themeColor="tint" style={styles.accentText}>
                                 Today
                             </ThemedText>
                         </Pressable>
@@ -143,7 +143,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: Spacing.two,
     },
     accentText: {
-        color: ACCENT,
     },
     arrow: {
         width: 32,

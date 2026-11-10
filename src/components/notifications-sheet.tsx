@@ -7,17 +7,17 @@ import { getNotifications, markAllNotificationsRead, markNotificationRead } from
 import type { AppNotification, NotificationType } from '@/api/types';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { Brand, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useNotifications } from '@/notifications/notifications-context';
 import { timeAgo } from '@/utils/time';
 
-const ACCENT = '#3c87f7';
+const ACCENT = Brand.primary;
 
 // боја на ознаката лево, по тип
 const TYPE_COLORS: Record<NotificationType, string> = {
     PLAYER_JOINED: '#3e63dd',
-    MATCH_FULL: '#30a46c',
+    MATCH_FULL: Brand.success,
     MATCH_CANCELLED: '#e5484d',
     MATCH_REMINDER: '#f76b15',
     REVIEW_REQUEST: '#f5a524',
@@ -78,7 +78,7 @@ export function NotificationsSheet({ visible, onClose }: Props) {
                             </ThemedText>
                             {hasUnread && (
                                 <Pressable onPress={markAll} style={({ pressed }) => pressed && styles.pressed}>
-                                    <ThemedText type="small" style={styles.accent}>
+                                    <ThemedText type="small" themeColor="tint" style={styles.accent}>
                                         Mark all read
                                     </ThemedText>
                                 </Pressable>
@@ -179,7 +179,6 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     accent: {
-        color: ACCENT,
     },
     close: {
         width: 36,

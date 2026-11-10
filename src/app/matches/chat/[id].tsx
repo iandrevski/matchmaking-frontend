@@ -18,13 +18,13 @@ import { useAuth } from '@/auth/auth-context';
 import { avatarColor } from '@/components/player-lineup';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
+import { BottomTabInset, Brand, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { formatMatchDate, formatTime } from '@/utils/format';
 import { sportEmoji } from '@/utils/sports';
 
 const POLL_MS = 3000;
-const ACCENT = '#3c87f7';
+const ACCENT = Brand.primary;
 
 // нови пораки се додаваат без дупликати (иста порака може да дојде од праќање и од polling)
 function merge(current: Message[], incoming: Message[]) {

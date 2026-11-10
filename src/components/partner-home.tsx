@@ -9,7 +9,7 @@ import { useAuth } from '@/auth/auth-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { VenueCard } from '@/components/venue-card';
-import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
+import { BottomTabInset, Brand, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
 
 export function PartnerHome() {
     const { user, logout } = useAuth();
@@ -39,7 +39,7 @@ export function PartnerHome() {
                         <ThemedText themeColor="textSecondary">Manage your venues</ThemedText>
                     </View>
                     <Pressable onPress={logout} style={({ pressed }) => pressed && styles.pressed}>
-                        <ThemedText type="small" style={styles.link}>
+                        <ThemedText type="small" themeColor="tint" style={styles.link}>
                             Log out
                         </ThemedText>
                     </Pressable>
@@ -96,10 +96,9 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     link: {
-        color: '#3c87f7',
     },
     cta: {
-        backgroundColor: '#3c87f7',
+        backgroundColor: Brand.primary,
         paddingVertical: Spacing.three,
         borderRadius: Spacing.three,
         alignItems: 'center',

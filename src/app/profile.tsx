@@ -17,7 +17,7 @@ import { MatchCard } from '@/components/match-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { VenueCard } from '@/components/venue-card';
-import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
+import { BottomTabInset, Brand, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
 import { useFavorites } from '@/favorites/favorites-context';
 import { useTheme } from '@/hooks/use-theme';
 import { past } from '@/utils/matches';
@@ -116,7 +116,7 @@ export default function ProfileScreen() {
                             <ThemedText themeColor="textSecondary">{user?.email}</ThemedText>
                         </View>
                         <Pressable onPress={logout} style={({ pressed }) => pressed && styles.pressed}>
-                            <ThemedText type="small" style={styles.link}>
+                            <ThemedText type="small" themeColor="tint" style={styles.link}>
                                 Log out
                             </ThemedText>
                         </Pressable>
@@ -245,7 +245,6 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     link: {
-        color: '#3c87f7',
     },
     stat: {
         flexDirection: 'row',
@@ -266,10 +265,10 @@ const styles = StyleSheet.create({
         color: '#e5484d',
     },
     success: {
-        color: '#30a46c',
+        color: Brand.success,
     },
     button: {
-        backgroundColor: '#3c87f7',
+        backgroundColor: Brand.primary,
         paddingVertical: Spacing.three,
         borderRadius: Spacing.three,
         alignItems: 'center',

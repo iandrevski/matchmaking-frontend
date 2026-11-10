@@ -32,7 +32,7 @@ export function LobbyChatCard({ matchId }: { matchId: number }) {
                         {last ? `${last.senderUsername}: ${last.text}` : 'Say hi to your teammates 👋'}
                     </ThemedText>
                 </View>
-                <ThemedText type="smallBold" style={styles.open}>
+                <ThemedText type="smallBold" themeColor="tint" style={styles.open}>
                     Open ›
                 </ThemedText>
             </ThemedView>
@@ -56,7 +56,6 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     open: {
-        color: '#3c87f7',
     },
     pressed: {
         opacity: 0.8,

@@ -2,7 +2,7 @@ import { Pressable, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Brand, Spacing } from '@/constants/theme';
 
 type Props = {
     label: string;
@@ -20,7 +20,9 @@ export function Chip({ label, selected, onPress, disabled }: Props) {
             <ThemedView
                 type={selected ? 'backgroundSelected' : 'backgroundElement'}
                 style={[styles.chip, selected && styles.chipSelected]}>
-                <ThemedText type={selected ? 'smallBold' : 'small'}>{label}</ThemedText>
+                <ThemedText type={selected ? 'smallBold' : 'small'} style={selected && styles.selectedText}>
+                    {label}
+                </ThemedText>
             </ThemedView>
         </Pressable>
     );
@@ -35,7 +37,11 @@ const styles = StyleSheet.create({
         borderColor: 'transparent',
     },
     chipSelected: {
-        borderColor: '#3c87f7',
+        backgroundColor: Brand.primary,
+        borderColor: Brand.primary,
+    },
+    selectedText: {
+        color: Brand.onPrimary,
     },
     pressed: {
         opacity: 0.7,

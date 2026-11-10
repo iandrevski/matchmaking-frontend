@@ -9,7 +9,7 @@ import { Chip } from '@/components/chip';
 import { SportFilter } from '@/components/sport-filter';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
+import { BottomTabInset, Brand, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
 import { formatTime, toLocalIsoString } from '@/utils/format';
 
 const HOURS = Array.from({ length: 15 }, (_, i) => 8 + i); // 08:00 – 22:00
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
         color: '#e5484d',
     },
     button: {
-        backgroundColor: '#3c87f7',
+        backgroundColor: Brand.primary,
         paddingVertical: Spacing.three,
         borderRadius: Spacing.three,
         alignItems: 'center',

@@ -1,24 +1,31 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { cancelMatch, getMatch, joinMatch, leaveMatch } from '@/api/client';
 import type { Match } from '@/api/types';
 import { useAuth } from '@/auth/auth-context';
 import { FavoriteButton } from '@/components/favorite-button';
+import { LobbyChatCard } from '@/components/lobby-chat-card';
+import { STATUS_COLORS, STATUS_LABELS } from '@/components/match-card';
 import { PlayerLineup } from '@/components/player-lineup';
 import { RateMatch } from '@/components/rate-match';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
+import { Card } from '@/components/ui/card';
+import { PillButton } from '@/components/ui/pill-button';
+import { Tag } from '@/components/ui/tag';
+import { BottomTabInset, Brand, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
 import { useFavorites } from '@/favorites/favorites-context';
-import { formatMatchDate } from '@/utils/format';
-import {LobbyChatCard} from "@/components/lobby-chat-card";
+import { useTheme } from '@/hooks/use-theme';
+import { durationMinutes, formatDayTime, formatTime } from '@/utils/format';
+import { sportEmoji } from '@/utils/sports';
 
 export default function MatchDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const matchId = Number(id);
+    const theme = useTheme();
     const { user } = useAuth();
     const { isFavoriteMatch, toggleMatch } = useFavorites();
 
@@ -62,13 +69,13 @@ export default function MatchDetailsScreen() {
     }
 
     function openPlayer(playerId: number) {
-        router.push({ pathname: '/matches/player/[id]', params: { id: playerId } });
+        router.push({ pathname: '/matches/player/[id]', params: { id: playerId, matchId: match?.id } });
     }
 
     if (loading) {
         return (
             <ThemedView style={styles.centered}>
-                <ActivityIndicator size="large" />
+                <ActivityIndicator size="large" color={theme.tint} />
             </ThemedView>
         );
     }
@@ -81,6 +88,8 @@ export default function MatchDetailsScreen() {
         );
     }
 
+    const max = match.sport.numberOfPlayers;
+    const spotsLeft = Math.max(max - match.participantsCount, 0);
     const isActive = match.status === 'OPEN' || match.status === 'FULL';
     const isParticipant = user ? match.participantIds.includes(user.id) : false;
     const isOrganizer = user?.id === match.organizerId;
@@ -90,23 +99,40 @@ export default function MatchDetailsScreen() {
         <ThemedView style={styles.container}>
             <SafeAreaView style={styles.safeArea}>
                 <ScrollView contentContainerStyle={styles.content}>
-                    <View style={styles.titleRow}>
-                        <ThemedText type="subtitle">{match.sport.name}</ThemedText>
-                        {user?.role === 'ROLE_USER' && (
-                            <FavoriteButton active={isFavoriteMatch(match.id)} onToggle={() => toggleMatch(match.id)} />
-                        )}
-                    </View>
+                    {/* hero: што, кога, каде */}
+                    <Card variant="dark" style={styles.hero}>
+                        <View style={styles.heroTop}>
+                            <View style={[styles.status, { backgroundColor: STATUS_COLORS[match.status] }]}>
+                                <ThemedText style={styles.statusText}>
+                                    {STATUS_LABELS[match.status].toUpperCase()}
+                                </ThemedText>
+                            </View>
+                            {user?.role === 'ROLE_USER' && (
+                                <FavoriteButton active={isFavoriteMatch(match.id)} onToggle={() => toggleMatch(match.id)} />
+                            )}
+                        </View>
 
-                    <ThemedView type="backgroundElement" style={styles.card}>
-                        <Row label="Venue" value={match.venueName} />
-                        <Row label="When" value={formatMatchDate(match.dateFrom, 'long')} />
-                        <Row label="Organizer" value={match.organizerUsername ?? '—'} />
-                        <Row
-                            label="Players"
-                            value={`${match.participantsCount}/${match.sport.numberOfPlayers}`}
-                        />
-                        <Row label="Status" value={match.status} />
-                    </ThemedView>
+                        <View>
+                            <ThemedText style={styles.heroSport}>
+                                {sportEmoji(match.sport.name)} {match.sport.name}
+                            </ThemedText>
+                            <ThemedText style={styles.heroWhen}>{formatDayTime(match.dateFrom)}</ThemedText>
+                            <ThemedText style={styles.heroMuted}>until {formatTime(match.dateTo)}</ThemedText>
+                        </View>
+
+                        <View style={styles.tags}>
+                            <Tag variant="onDark" label={`${durationMinutes(match.dateFrom, match.dateTo)} MIN`} />
+                            <Tag variant="onDark" label={`${match.participantsCount}/${max} PLAYERS`} />
+                            {match.status === 'OPEN' && (
+                                <Tag variant="onDark" label={`${spotsLeft} ${spotsLeft === 1 ? 'SPOT' : 'SPOTS'} LEFT`} />
+                            )}
+                        </View>
+
+                        <View style={[styles.heroInfo, { borderTopColor: Brand.onDarkFaint }]}>
+                            <Info label="Venue" value={match.venueName} />
+                            <Info label="Organizer" value={match.organizerUsername ?? '—'} />
+                        </View>
+                    </Card>
 
                     {isParticipant && <LobbyChatCard matchId={match.id} />}
 
@@ -115,86 +141,68 @@ export default function MatchDetailsScreen() {
                         <RateMatch match={match} currentUserId={user.id} />
                     )}
 
-                    <PlayerLineup
-                        match={match}
-                        currentUserId={user?.id}
-                        canJoin={canJoin && !submitting}
-                        onJoin={() => runAction(joinMatch)}
-                        onPlayerPress={openPlayer}
-                    />
-                    <ThemedText type="small" themeColor="textSecondary" style={styles.hint}>
-                        Tap a player to see their profile.
-                    </ThemedText>
-
-                    {error && <ThemedText style={styles.error}>{error}</ThemedText>}
-
-                    {isParticipant && isActive ? (
-                        <ActionButton
-                            label="Leave match"
-                            variant="secondary"
-                            loading={submitting}
-                            onPress={() => runAction(leaveMatch)}
+                    <View style={styles.section}>
+                        <ThemedText style={styles.sectionTitle}>Players</ThemedText>
+                        <PlayerLineup
+                            match={match}
+                            currentUserId={user?.id}
+                            canJoin={canJoin && !submitting}
+                            onJoin={() => runAction(joinMatch)}
+                            onPlayerPress={openPlayer}
                         />
-                    ) : (
-                        <ActionButton
-                            label={canJoin ? 'Join match' : match.status}
-                            disabled={!canJoin}
-                            loading={submitting}
-                            onPress={() => runAction(joinMatch)}
-                        />
+                        <ThemedText type="small" themeColor="textSecondary" style={styles.center}>
+                            Tap a player to see their profile.
+                        </ThemedText>
+                    </View>
+
+                    {error && (
+                        <View style={styles.errorBox}>
+                            <ThemedText type="small" style={styles.error}>
+                                {error}
+                            </ThemedText>
+                        </View>
                     )}
 
-                    {isOrganizer && isActive && (
-                        <ActionButton
-                            label={confirmCancel ? 'Tap again to cancel' : 'Cancel match'}
-                            variant="secondary"
-                            loading={submitting}
-                            onPress={onCancelPress}
-                        />
-                    )}
+                    <View style={styles.actions}>
+                        {isParticipant && isActive ? (
+                            <PillButton
+                                label="Leave match"
+                                variant="danger"
+                                loading={submitting}
+                                onPress={() => runAction(leaveMatch)}
+                            />
+                        ) : (
+                            <PillButton
+                                label={canJoin ? 'Join match' : STATUS_LABELS[match.status]}
+                                disabled={!canJoin}
+                                loading={submitting}
+                                onPress={() => runAction(joinMatch)}
+                            />
+                        )}
+
+                        {isOrganizer && isActive && (
+                            <PillButton
+                                label={confirmCancel ? 'Tap again to cancel the match' : 'Cancel match'}
+                                variant="outline"
+                                loading={submitting}
+                                onPress={onCancelPress}
+                            />
+                        )}
+                    </View>
                 </ScrollView>
             </SafeAreaView>
         </ThemedView>
     );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function Info({ label, value }: { label: string; value: string }) {
     return (
-        <ThemedView type="backgroundElement" style={styles.row}>
-            <ThemedText type="small" themeColor="textSecondary">
-                {label}
+        <View style={styles.info}>
+            <ThemedText style={styles.infoLabel}>{label.toUpperCase()}</ThemedText>
+            <ThemedText style={styles.infoValue} numberOfLines={1}>
+                {value}
             </ThemedText>
-            <ThemedText type="smallBold">{value}</ThemedText>
-        </ThemedView>
-    );
-}
-
-type ActionButtonProps = {
-    label: string;
-    onPress: () => void;
-    loading?: boolean;
-    disabled?: boolean;
-    variant?: 'primary' | 'secondary';
-};
-
-function ActionButton({ label, onPress, loading, disabled, variant = 'primary' }: ActionButtonProps) {
-    const inactive = disabled || loading;
-    return (
-        <Pressable
-            onPress={onPress}
-            disabled={inactive}
-            style={({ pressed }) => [
-                styles.button,
-                variant === 'primary' ? styles.buttonPrimary : styles.buttonSecondary,
-                inactive && styles.buttonDisabled,
-                pressed && styles.buttonPressed,
-            ]}>
-            {loading ? (
-                <ActivityIndicator color="#ffffff" />
-            ) : (
-                <ThemedText style={styles.buttonText}>{label}</ThemedText>
-            )}
-        </Pressable>
+        </View>
     );
 }
 
@@ -210,55 +218,96 @@ const styles = StyleSheet.create({
         paddingTop: TopTabInset,
     },
     content: {
-        paddingHorizontal: Spacing.four,
-        paddingTop: Spacing.four,
+        paddingHorizontal: Spacing.three,
+        paddingTop: Spacing.three,
         paddingBottom: BottomTabInset + Spacing.five,
-        gap: Spacing.three,
+        gap: Spacing.four,
     },
     centered: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
     },
-    titleRow: {
+    hero: {
+        gap: Spacing.three,
+    },
+    heroTop: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
     },
-    card: {
-        padding: Spacing.three,
-        borderRadius: Spacing.three,
+    status: {
+        paddingHorizontal: Spacing.two,
+        height: 24,
+        justifyContent: 'center',
+        borderRadius: 12,
+    },
+    statusText: {
+        color: '#ffffff',
+        fontSize: 11,
+        lineHeight: 14,
+        fontWeight: 800,
+        letterSpacing: 0.6,
+    },
+    heroSport: {
+        color: Brand.accent,
+        fontWeight: 700,
+    },
+    heroWhen: {
+        color: Brand.onDark,
+        fontSize: 30,
+        lineHeight: 38,
+        fontWeight: 700,
+    },
+    heroMuted: {
+        color: Brand.onDarkMuted,
+    },
+    tags: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
         gap: Spacing.two,
     },
-    row: {
+    heroInfo: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        gap: Spacing.three,
+        paddingTop: Spacing.three,
+        borderTopWidth: 1,
     },
-    hint: {
+    info: {
+        flex: 1,
+        gap: Spacing.half,
+    },
+    infoLabel: {
+        color: Brand.onDarkMuted,
+        fontSize: 11,
+        lineHeight: 14,
+        fontWeight: 700,
+        letterSpacing: 0.6,
+    },
+    infoValue: {
+        color: Brand.onDark,
+        fontWeight: 700,
+    },
+    section: {
+        gap: Spacing.three,
+    },
+    sectionTitle: {
+        fontSize: 20,
+        lineHeight: 26,
+        fontWeight: 700,
+    },
+    center: {
         textAlign: 'center',
-        marginTop: -Spacing.two,
+    },
+    errorBox: {
+        padding: Spacing.three,
+        borderRadius: 14,
+        backgroundColor: 'rgba(214,69,69,0.12)',
     },
     error: {
-        color: '#e5484d',
+        color: Brand.danger,
     },
-    button: {
-        paddingVertical: Spacing.three,
-        borderRadius: Spacing.three,
-        alignItems: 'center',
-    },
-    buttonPrimary: {
-        backgroundColor: '#3c87f7',
-    },
-    buttonSecondary: {
-        backgroundColor: '#e5484d',
-    },
-    buttonDisabled: {
-        opacity: 0.5,
-    },
-    buttonPressed: {
-        opacity: 0.8,
-    },
-    buttonText: {
-        color: '#ffffff',
+    actions: {
+        gap: Spacing.two,
     },
 });

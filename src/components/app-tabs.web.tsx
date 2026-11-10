@@ -12,7 +12,7 @@ import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
 
 import { useAuth } from '@/auth/auth-context';
-import { MaxContentWidth, Spacing } from '@/constants/theme';
+import { Brand, MaxContentWidth, Spacing } from '@/constants/theme';
 
 export default function AppTabs() {
   const { user } = useAuth();
@@ -49,9 +49,12 @@ export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps
   return (
       <Pressable {...props} style={({ pressed }) => pressed && styles.pressed}>
         <ThemedView
-            type={isFocused ? 'backgroundSelected' : 'backgroundElement'}
-            style={styles.tabButtonView}>
-          <ThemedText type="small" themeColor={isFocused ? 'text' : 'textSecondary'}>
+            type="backgroundElement"
+            style={[styles.tabButtonView, isFocused && styles.tabButtonFocused]}>
+          <ThemedText
+              type={isFocused ? 'smallBold' : 'small'}
+              themeColor="textSecondary"
+              style={isFocused && styles.tabTextFocused}>
             {children}
           </ThemedText>
         </ThemedView>
@@ -63,8 +66,8 @@ export function CustomTabList(props: TabListProps) {
   return (
       <View {...props} style={styles.tabListContainer}>
         <ThemedView type="backgroundElement" style={styles.innerContainer}>
-          <ThemedText type="smallBold" style={styles.brandText}>
-            Sportify
+          <ThemedText type="smallBold" themeColor="tint" style={styles.brandText}>
+            ⚽ Sportify
           </ThemedText>
 
           {props.children}
@@ -84,7 +87,7 @@ const styles = StyleSheet.create({
   },
   innerContainer: {
     paddingVertical: Spacing.two,
-    paddingHorizontal: Spacing.five,
+    paddingHorizontal: Spacing.three,
     borderRadius: Spacing.five,
     flexDirection: 'row',
     alignItems: 'center',
@@ -98,9 +101,15 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.7,
   },
+  tabButtonFocused: {
+    backgroundColor: Brand.primary,
+  },
+  tabTextFocused: {
+    color: Brand.onPrimary,
+  },
   tabButtonView: {
     paddingVertical: Spacing.one,
     paddingHorizontal: Spacing.three,
-    borderRadius: Spacing.three,
+    borderRadius: Spacing.four,
   },
 });

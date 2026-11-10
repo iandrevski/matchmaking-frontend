@@ -1,4 +1,4 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
+import { DarkTheme, DefaultTheme, ThemeProvider, type Theme } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { ActivityIndicator, StyleSheet, useColorScheme } from 'react-native';
 
@@ -7,10 +7,36 @@ import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import AppTabs from '@/components/app-tabs';
 import { AuthScreen } from '@/components/auth-screen';
 import { ThemedView } from '@/components/themed-view';
+import { Brand, Colors } from '@/constants/theme';
 import { FavoritesProvider } from '@/favorites/favorites-context';
 import {NotificationsProvider} from "@/notifications/notifications-context";
 
 SplashScreen.preventAutoHideAsync();
+
+// header-и и позадини на навигацијата во бојата на Sportify
+const LightNavTheme: Theme = {
+    ...DefaultTheme,
+    colors: {
+        ...DefaultTheme.colors,
+        primary: Brand.primary,
+        background: Colors.light.background,
+        card: Colors.light.background,
+        text: Colors.light.text,
+        border: Colors.light.border,
+    },
+};
+
+const DarkNavTheme: Theme = {
+    ...DarkTheme,
+    colors: {
+        ...DarkTheme.colors,
+        primary: Colors.dark.tint,
+        background: Colors.dark.background,
+        card: Colors.dark.background,
+        text: Colors.dark.text,
+        border: Colors.dark.border,
+    },
+};
 
 // најавен → апликацијата; не → Login; додека се проверува токенот → spinner
 function RootNavigator() {
@@ -19,7 +45,7 @@ function RootNavigator() {
     if (loading) {
         return (
             <ThemedView style={styles.centered}>
-                <ActivityIndicator size="large" />
+                <ActivityIndicator size="large" color={Brand.primary} />
             </ThemedView>
         );
     }
@@ -33,7 +59,7 @@ export default function RootLayout() {
         <AuthProvider>
             <FavoritesProvider>
                 <NotificationsProvider>
-                    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+                    <ThemeProvider value={colorScheme === 'dark' ? DarkNavTheme : LightNavTheme}>
                         <AnimatedSplashOverlay />
                         <RootNavigator />
                     </ThemeProvider>

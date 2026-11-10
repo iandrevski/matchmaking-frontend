@@ -1,20 +1,12 @@
 import { useState } from 'react';
-import {
-    ActivityIndicator,
-    KeyboardAvoidingView,
-    Platform,
-    Pressable,
-    StyleSheet,
-    TextInput,
-    View,
-} from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/auth/auth-context';
 import { Chip } from '@/components/chip';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { PillButton } from '@/components/ui/pill-button';
+import { Brand, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 type Mode = 'login' | 'register';
@@ -57,140 +49,184 @@ export function AuthScreen() {
         setError(null);
     }
 
-    const inputStyle = [styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }];
+    const inputStyle = [
+        styles.input,
+        { color: theme.text, backgroundColor: theme.background, borderColor: theme.border },
+    ];
 
     return (
-        <ThemedView style={styles.container}>
+        <View style={styles.screen}>
             <SafeAreaView style={styles.safeArea}>
-                <KeyboardAvoidingView
-                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                    style={styles.form}>
-                    <ThemedText type="subtitle">Sportify</ThemedText>
-                    <ThemedText themeColor="textSecondary">
-                        {isRegister ? 'Create an account to get started' : 'Log in to find a match'}
-                    </ThemedText>
-
-                    {isRegister && (
-                        <View style={styles.accountType}>
-                            <Chip
-                                label="Player"
-                                selected={accountType === 'player'}
-                                onPress={() => setAccountType('player')}
-                            />
-                            <Chip
-                                label="Venue owner"
-                                selected={accountType === 'partner'}
-                                onPress={() => setAccountType('partner')}
-                            />
+                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
+                    <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+                        {/* горе: бренд и порака */}
+                        <View style={styles.intro}>
+                            <ThemedText style={styles.brand}>⚽ Sportify</ThemedText>
+                            <ThemedText style={styles.headline}>
+                                Find your game.{'\n'}
+                                <ThemedText style={[styles.headline, styles.accent]}>Meet your team.</ThemedText>
+                            </ThemedText>
+                            <ThemedText style={styles.lead}>
+                                Join matches near you, fill your squad and play more.
+                            </ThemedText>
                         </View>
-                    )}
 
-                    <TextInput
-                        style={inputStyle}
-                        placeholder="Username"
-                        placeholderTextColor={theme.textSecondary}
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        value={username}
-                        onChangeText={setUsername}
-                    />
+                        {/* долу: форма во бела картичка */}
+                        <View style={[styles.sheet, { backgroundColor: theme.backgroundElement }]}>
+                            <ThemedText style={styles.title}>{isRegister ? 'Create your account' : 'Welcome back'}</ThemedText>
 
-                    {isRegister && (
-                        <TextInput
-                            style={inputStyle}
-                            placeholder="Email"
-                            placeholderTextColor={theme.textSecondary}
-                            autoCapitalize="none"
-                            autoCorrect={false}
-                            keyboardType="email-address"
-                            value={email}
-                            onChangeText={setEmail}
-                        />
-                    )}
+                            {isRegister && (
+                                <View style={styles.accountType}>
+                                    <Chip
+                                        label="🏃 Player"
+                                        selected={accountType === 'player'}
+                                        onPress={() => setAccountType('player')}
+                                    />
+                                    <Chip
+                                        label="🏟️ Venue owner"
+                                        selected={accountType === 'partner'}
+                                        onPress={() => setAccountType('partner')}
+                                    />
+                                </View>
+                            )}
 
-                    <TextInput
-                        style={inputStyle}
-                        placeholder="Password"
-                        placeholderTextColor={theme.textSecondary}
-                        secureTextEntry
-                        value={password}
-                        onChangeText={setPassword}
-                        onSubmitEditing={onSubmit}
-                    />
+                            <TextInput
+                                style={inputStyle}
+                                placeholder="Username"
+                                placeholderTextColor={theme.textSecondary}
+                                autoCapitalize="none"
+                                autoCorrect={false}
+                                value={username}
+                                onChangeText={setUsername}
+                            />
 
-                    {error && <ThemedText style={styles.error}>{error}</ThemedText>}
+                            {isRegister && (
+                                <TextInput
+                                    style={inputStyle}
+                                    placeholder="Email"
+                                    placeholderTextColor={theme.textSecondary}
+                                    autoCapitalize="none"
+                                    autoCorrect={false}
+                                    keyboardType="email-address"
+                                    value={email}
+                                    onChangeText={setEmail}
+                                />
+                            )}
 
-                    <Pressable
-                        onPress={onSubmit}
-                        disabled={!canSubmit}
-                        style={({ pressed }) => [
-                            styles.button,
-                            !canSubmit && styles.buttonDisabled,
-                            pressed && styles.buttonPressed,
-                        ]}>
-                        {submitting ? (
-                            <ActivityIndicator color="#ffffff" />
-                        ) : (
-                            <ThemedText style={styles.buttonText}>{isRegister ? 'Create account' : 'Log in'}</ThemedText>
-                        )}
-                    </Pressable>
+                            <TextInput
+                                style={inputStyle}
+                                placeholder="Password"
+                                placeholderTextColor={theme.textSecondary}
+                                secureTextEntry
+                                value={password}
+                                onChangeText={setPassword}
+                                onSubmitEditing={onSubmit}
+                            />
 
-                    <Pressable onPress={switchMode}>
-                        <ThemedText type="small" style={styles.link}>
-                            {isRegister ? 'Already have an account? Log in' : "Don't have an account? Sign up"}
-                        </ThemedText>
-                    </Pressable>
+                            {error && (
+                                <View style={styles.errorBox}>
+                                    <ThemedText type="small" style={styles.error}>
+                                        {error}
+                                    </ThemedText>
+                                </View>
+                            )}
+
+                            <PillButton
+                                label={isRegister ? 'Create account' : 'Log in'}
+                                onPress={onSubmit}
+                                disabled={!canSubmit}
+                                loading={submitting}
+                            />
+
+                            <Pressable onPress={switchMode} hitSlop={8}>
+                                <ThemedText type="small" themeColor="textSecondary" style={styles.center}>
+                                    {isRegister ? 'Already have an account? ' : 'New to Sportify? '}
+                                    <ThemedText type="smallBold" themeColor="tint">
+                                        {isRegister ? 'Log in' : 'Sign up'}
+                                    </ThemedText>
+                                </ThemedText>
+                            </Pressable>
+                        </View>
+                    </ScrollView>
                 </KeyboardAvoidingView>
             </SafeAreaView>
-        </ThemedView>
+        </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
+    screen: {
         flex: 1,
         flexDirection: 'row',
         justifyContent: 'center',
+        backgroundColor: Brand.forest,
     },
     safeArea: {
         flex: 1,
-        maxWidth: 420,
-        justifyContent: 'center',
-        paddingHorizontal: Spacing.four,
+        maxWidth: 480,
     },
-    form: {
+    flex: {
+        flex: 1,
+    },
+    scroll: {
+        flexGrow: 1,
+        justifyContent: 'flex-end',
+        padding: Spacing.three,
+        gap: Spacing.five,
+    },
+    intro: {
+        paddingHorizontal: Spacing.two,
         gap: Spacing.three,
+    },
+    brand: {
+        color: Brand.onDark,
+        fontWeight: 800,
+        letterSpacing: 0.3,
+    },
+    headline: {
+        color: Brand.onDark,
+        fontSize: 38,
+        lineHeight: 46,
+        fontWeight: 700,
+    },
+    accent: {
+        color: Brand.accent,
+    },
+    lead: {
+        color: Brand.onDarkMuted,
+        fontSize: 16,
+        lineHeight: 24,
+    },
+    sheet: {
+        borderRadius: Radius.xl,
+        padding: Spacing.four,
+        gap: Spacing.three,
+    },
+    title: {
+        fontSize: 22,
+        lineHeight: 28,
+        fontWeight: 700,
     },
     accountType: {
         flexDirection: 'row',
         gap: Spacing.two,
     },
     input: {
+        height: 52,
         paddingHorizontal: Spacing.three,
-        paddingVertical: Spacing.three,
-        borderRadius: Spacing.three,
+        borderRadius: Radius.md,
+        borderWidth: 1.5,
         fontSize: 16,
     },
+    errorBox: {
+        padding: Spacing.three,
+        borderRadius: 14,
+        backgroundColor: 'rgba(214,69,69,0.12)',
+    },
     error: {
-        color: '#e5484d',
+        color: Brand.danger,
     },
-    button: {
-        backgroundColor: '#3c87f7',
-        paddingVertical: Spacing.three,
-        borderRadius: Spacing.three,
-        alignItems: 'center',
-    },
-    buttonDisabled: {
-        opacity: 0.5,
-    },
-    buttonPressed: {
-        opacity: 0.8,
-    },
-    buttonText: {
-        color: '#ffffff',
-    },
-    link: {
-        color: '#3c87f7',
+    center: {
         textAlign: 'center',
     },
 });

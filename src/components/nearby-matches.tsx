@@ -8,7 +8,8 @@ import { useAuth } from '@/auth/auth-context';
 import { Chip } from '@/components/chip';
 import { MatchCard } from '@/components/match-card';
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { ThemedView } from '@/components/themed-view';
+import { Brand, Spacing } from '@/constants/theme';
 
 const RADII = [5, 10, 25];
 
@@ -65,7 +66,7 @@ export function NearbyMatches() {
 
     return (
         <View style={styles.section}>
-            <ThemedText type="smallBold">Near you</ThemedText>
+            <ThemedText style={styles.title}>📍 Near you</ThemedText>
 
             <View style={styles.radii}>
                 {RADII.map((km) => (
@@ -76,12 +77,16 @@ export function NearbyMatches() {
             <Pressable
                 onPress={findNearby}
                 disabled={loading}
-                style={({ pressed }) => [styles.button, loading && styles.disabled, pressed && styles.pressed]}>
-                {loading ? (
-                    <ActivityIndicator color="#ffffff" />
-                ) : (
-                    <ThemedText style={styles.buttonText}>📍 Find matches near me</ThemedText>
-                )}
+                style={({ pressed }) => [loading && styles.disabled, pressed && styles.pressed]}>
+                <ThemedView type="tintSoft" style={styles.button}>
+                    {loading ? (
+                        <ActivityIndicator color={Brand.primary} />
+                    ) : (
+                        <ThemedText themeColor="tint" style={styles.buttonText}>
+                            Find matches near me
+                        </ThemedText>
+                    )}
+                </ThemedView>
             </Pressable>
 
             {error && <ThemedText style={styles.error}>{error}</ThemedText>}
@@ -106,20 +111,24 @@ export function NearbyMatches() {
 
 const styles = StyleSheet.create({
     section: {
-        gap: Spacing.two,
+        gap: Spacing.three,
+    },
+    title: {
+        fontSize: 18,
+        lineHeight: 24,
+        fontWeight: 700,
     },
     radii: {
         flexDirection: 'row',
         gap: Spacing.two,
     },
     button: {
-        backgroundColor: '#30a46c',
         paddingVertical: Spacing.three,
         borderRadius: Spacing.three,
         alignItems: 'center',
     },
     buttonText: {
-        color: '#ffffff',
+        fontWeight: 700,
     },
     disabled: {
         opacity: 0.5,
