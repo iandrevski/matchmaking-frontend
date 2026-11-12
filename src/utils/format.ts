@@ -51,3 +51,14 @@ export function formatDayTime(iso: string) {
 export function durationMinutes(fromIso: string, toIso: string) {
     return Math.round((new Date(toIso).getTime() - new Date(fromIso).getTime()) / 60000);
 }
+
+// „Today“, „Yesterday“, „Mon, Nov 10“: разделници по денови во чатот
+export function formatDayLabel(iso: string) {
+    const date = new Date(iso);
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+    if (date.toDateString() === today.toDateString()) return 'Today';
+    if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
+    return date.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+}
