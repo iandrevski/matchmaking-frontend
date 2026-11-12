@@ -7,7 +7,7 @@ import { deleteVenuePhoto, photoUrl, uploadVenuePhoto } from '@/api/client';
 import type { Venue } from '@/api/types';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Brand, Spacing } from '@/constants/theme';
 
 const HEIGHT = 220;
 const MAX_PHOTOS = 8;
@@ -127,7 +127,7 @@ export function VenueGallery({ venue, canEdit, onChange }: Props) {
                     onPress={addPhoto}
                     disabled={busy}
                     style={({ pressed }) => [styles.addButton, pressed && styles.pressed]}>
-                    <ThemedText type="smallBold" style={styles.addText}>
+                    <ThemedText type="smallBold" themeColor="tint" style={styles.addText}>
                         + Add photo ({photos.length}/{MAX_PHOTOS})
                     </ThemedText>
                 </Pressable>
@@ -221,13 +221,12 @@ const styles = StyleSheet.create({
     addButton: {
         borderWidth: 1,
         borderStyle: 'dashed',
-        borderColor: '#3c87f7',
+        borderColor: Brand.primary,
         borderRadius: Spacing.three,
         paddingVertical: Spacing.two,
         alignItems: 'center',
     },
     addText: {
-        color: '#3c87f7',
     },
     error: {
         color: '#e5484d',

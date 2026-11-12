@@ -197,3 +197,19 @@ export type AppNotification = {
     read: boolean;
     createdAt: string;
 };
+
+// ---------- Reports ----------
+export type ReportReason =
+    | 'NO_SHOW'
+    | 'LATE'
+    | 'ABUSIVE_LANGUAGE'
+    | 'AGGRESSIVE_BEHAVIOR'
+    | 'CHEATING'
+    | 'SPAM'
+    | 'OTHER';
+
+export type ReportRequest = {
+    reason: ReportReason;
+    details: string | null;
+    matchId: number | null;
+};

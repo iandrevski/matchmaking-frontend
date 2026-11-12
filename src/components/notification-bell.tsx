@@ -3,10 +3,16 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { NotificationsSheet } from '@/components/notifications-sheet';
 import { ThemedText } from '@/components/themed-text';
-import { useNotifications } from '@/notifications/notifications-context';
+import { Brand } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { useNotifications } from '@/notifications/notifications-context';
+import { Icon } from '@/components/ui/icon';
 
-export function NotificationBell() {
+type Props = {
+    onDark?: boolean; // врз темно зелен hero блок
+};
+
+export function NotificationBell({ onDark }: Props) {
     const theme = useTheme();
     const { unreadCount } = useNotifications();
     const [open, setOpen] = useState(false);
@@ -16,8 +22,14 @@ export function NotificationBell() {
             <Pressable
                 onPress={() => setOpen(true)}
                 accessibilityLabel={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
-                style={({ pressed }) => [styles.button, { backgroundColor: theme.backgroundElement }, pressed && styles.pressed]}>
-                <ThemedText style={styles.icon}>🔔</ThemedText>
+                style={({ pressed }) => [
+                    styles.button,
+                    onDark
+                        ? { backgroundColor: Brand.onDarkFaint }
+                        : { backgroundColor: theme.backgroundElement, borderColor: theme.border, borderWidth: 1 },
+                    pressed && styles.pressed,
+                ]}>
+                <Icon name="bell" size={20} color={onDark ? Brand.onDark : theme.text} />
                 {unreadCount > 0 && (
                     <View style={styles.badge}>
                         <ThemedText style={styles.badgeText}>{unreadCount > 99 ? '99+' : unreadCount}</ThemedText>
@@ -31,9 +43,9 @@ export function NotificationBell() {
 
 const styles = StyleSheet.create({
     button: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
+        width: 44,
+        height: 44,
+        borderRadius: 22,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -43,13 +55,13 @@ const styles = StyleSheet.create({
     },
     badge: {
         position: 'absolute',
-        top: -4,
-        right: -4,
-        minWidth: 18,
-        height: 18,
-        paddingHorizontal: 4,
-        borderRadius: 9,
-        backgroundColor: '#e5484d',
+        top: -3,
+        right: -3,
+        minWidth: 20,
+        height: 20,
+        paddingHorizontal: 5,
+        borderRadius: 10,
+        backgroundColor: Brand.danger,
         alignItems: 'center',
         justifyContent: 'center',
     },

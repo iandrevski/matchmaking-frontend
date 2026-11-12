@@ -2,8 +2,8 @@ import { ScrollView, StyleSheet } from 'react-native';
 
 import type { Sport } from '@/api/types';
 import { Chip } from '@/components/chip';
+import { SportIcon } from '@/components/ui/icon';
 import { Spacing } from '@/constants/theme';
-import { sportEmoji } from '@/utils/sports';
 
 type Props = {
     sports: Sport[];
@@ -23,9 +23,10 @@ export function SportFilter({ sports, selectedId, onSelect, showAll = true }: Pr
             {sports.map((sport) => (
                 <Chip
                     key={sport.id}
-                    label={`${sportEmoji(sport.name)} ${sport.name}`}
+                    label={sport.name}
                     selected={selectedId === sport.id}
                     onPress={() => onSelect(sport.id)}
+                    renderIcon={(color) => <SportIcon sport={sport.name} size={17} color={color} />}
                 />
             ))}
         </ScrollView>

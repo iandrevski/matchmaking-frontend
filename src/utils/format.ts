@@ -5,11 +5,12 @@ export function formatMatchDate(iso: string, variant: 'short' | 'long' = 'short'
         month: variant,
         hour: '2-digit',
         minute: '2-digit',
+        hour12: false,
     });
 }
 
 export function formatTime(iso: string) {
-    return new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    return new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
 // Date → "2026-10-21T18:00:00" (локално време, без Z, како што очекува backend-от)
@@ -30,4 +31,34 @@ export function formatAddress(venue: { address: string | null; municipality: str
 
 export function formatPrice(pricePerHour: number | null) {
     return pricePerHour === null ? 'Price on request' : `${pricePerHour} MKD/h`;
+}
+
+// „Today · 18:00“, „Tomorrow · 18:00“, „Wed 5 Nov · 18:00“
+export function formatDayTime(iso: string) {
+    const date = new Date(iso);
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+
+    let day: string;
+    if (date.toDateString() === today.toDateString()) day = 'Today';
+    else if (date.toDateString() === tomorrow.toDateString()) day = 'Tomorrow';
+    else day = date.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
+
+    return `${day} · ${formatTime(iso)}`;
+}
+
+export function durationMinutes(fromIso: string, toIso: string) {
+    return Math.round((new Date(toIso).getTime() - new Date(fromIso).getTime()) / 60000);
+}
+
+// „Today“, „Yesterday“, „Mon, Nov 10“: разделници по денови во чатот
+export function formatDayLabel(iso: string) {
+    const date = new Date(iso);
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+    if (date.toDateString() === today.toDateString()) return 'Today';
+    if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
+    return date.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' });
 }

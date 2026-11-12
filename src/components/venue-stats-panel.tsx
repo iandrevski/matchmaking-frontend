@@ -5,11 +5,12 @@ import { getVenueStats } from '@/api/client';
 import type { CountItem, VenueStats } from '@/api/types';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Brand, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { sportEmoji } from '@/utils/sports';
+import { SectionTitle } from '@/components/ui/section-title';
 
-const ACCENT = '#3c87f7';
+const ACCENT = Brand.primary;
 const CHART_HEIGHT = 96;
 
 export function VenueStatsPanel({ venueId }: { venueId: number }) {
@@ -31,7 +32,7 @@ export function VenueStatsPanel({ venueId }: { venueId: number }) {
 
     return (
         <View style={styles.section}>
-            <ThemedText type="smallBold">Insights</ThemedText>
+            <SectionTitle>Insights</SectionTitle>
 
             {stats.totalMatches === 0 ? (
                 <ThemedText type="small" themeColor="textSecondary">
@@ -116,7 +117,7 @@ function ChartCard({ title, items, labelEvery }: { title: string; items: CountIt
             <View style={styles.chartHeader}>
                 <ThemedText type="smallBold">{title}</ThemedText>
                 {peak.count > 0 && (
-                    <ThemedText type="small" style={styles.accentText}>
+                    <ThemedText type="small" themeColor="tint" style={styles.accentText}>
                         Peak: {peak.label}
                     </ThemedText>
                 )}
@@ -127,7 +128,7 @@ function ChartCard({ title, items, labelEvery }: { title: string; items: CountIt
                     const isPeak = item === peak && item.count > 0;
                     return (
                         <View key={item.label} style={styles.column}>
-                            <ThemedText style={[styles.columnValue, !isPeak && styles.hidden]}>{item.count}</ThemedText>
+                            <ThemedText themeColor="tint" style={[styles.columnValue, !isPeak && styles.hidden]}>{item.count}</ThemedText>
                             <View style={styles.columnArea}>
                                 <View
                                     style={[
@@ -211,7 +212,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     accentText: {
-        color: ACCENT,
         fontWeight: 600,
     },
     columns: {
@@ -227,7 +227,6 @@ const styles = StyleSheet.create({
         fontSize: 11,
         lineHeight: 14,
         fontWeight: 700,
-        color: ACCENT,
     },
     hidden: {
         opacity: 0,

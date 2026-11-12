@@ -1,3 +1,4 @@
+import { Feather } from '@expo/vector-icons';
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { useColorScheme } from 'react-native';
 
@@ -6,45 +7,34 @@ import { Colors } from '@/constants/theme';
 
 export default function AppTabs() {
     const scheme = useColorScheme();
-    const colors = Colors[scheme === 'unspecified' ? 'light' : scheme];
+    const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
     const { user } = useAuth();
     const isPartner = user?.role === 'ROLE_OWNER';
 
     return (
         <NativeTabs
-            backgroundColor={colors.background}
-            indicatorColor={colors.backgroundElement}
-            labelStyle={{ selected: { color: colors.text } }}>
+            backgroundColor={colors.backgroundElement}
+            tintColor={colors.tint}
+            indicatorColor={colors.tintSoft}
+            labelStyle={{ selected: { color: colors.tint } }}>
             <NativeTabs.Trigger name="index">
                 <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-                <NativeTabs.Trigger.Icon
-                    src={require('@/assets/images/tabIcons/home.png')}
-                    renderingMode="template"
-                />
+                <NativeTabs.Trigger.Icon src={<NativeTabs.Trigger.VectorIcon family={Feather} name="home" />} />
             </NativeTabs.Trigger>
 
             <NativeTabs.Trigger name="venues">
                 <NativeTabs.Trigger.Label>Venues</NativeTabs.Trigger.Label>
-                <NativeTabs.Trigger.Icon
-                    src={require('@/assets/images/tabIcons/explore.png')}
-                    renderingMode="template"
-                />
+                <NativeTabs.Trigger.Icon src={<NativeTabs.Trigger.VectorIcon family={Feather} name="map-pin" />} />
             </NativeTabs.Trigger>
 
             <NativeTabs.Trigger name="matches" hidden={isPartner}>
                 <NativeTabs.Trigger.Label>Matches</NativeTabs.Trigger.Label>
-                <NativeTabs.Trigger.Icon
-                    src={require('@/assets/images/tabIcons/explore.png')}
-                    renderingMode="template"
-                />
+                <NativeTabs.Trigger.Icon src={<NativeTabs.Trigger.VectorIcon family={Feather} name="calendar" />} />
             </NativeTabs.Trigger>
 
             <NativeTabs.Trigger name="profile" hidden={isPartner}>
                 <NativeTabs.Trigger.Label>Profile</NativeTabs.Trigger.Label>
-                <NativeTabs.Trigger.Icon
-                    src={require('@/assets/images/tabIcons/home.png')}
-                    renderingMode="template"
-                />
+                <NativeTabs.Trigger.Icon src={<NativeTabs.Trigger.VectorIcon family={Feather} name="user" />} />
             </NativeTabs.Trigger>
         </NativeTabs>
     );

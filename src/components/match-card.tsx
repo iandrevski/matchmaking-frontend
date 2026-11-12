@@ -3,19 +3,30 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import type { Match, MatchStatus } from '@/api/types';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Avatar } from '@/components/ui/avatar';
+import { Card } from '@/components/ui/card';
+import { Tag } from '@/components/ui/tag';
+import { Brand, Spacing } from '@/constants/theme';
+import { useFavorites } from '@/favorites/favorites-context';
 import { useTheme } from '@/hooks/use-theme';
-import { formatMatchDate, formatTime } from '@/utils/format';
-import { sportEmoji } from '@/utils/sports';
-import {useFavorites} from "@/favorites/favorites-context";
+import { durationMinutes, formatDayTime } from '@/utils/format';
+import { SportIcon } from '@/components/ui/icon';
 
-const STATUS_COLORS: Record<MatchStatus, string> = {
-    OPEN: '#30a46c',
-    FULL: '#f76b15',
-    FINISHED: '#8b8d98',
-    CANCELLED: '#e5484d',
+export const STATUS_LABELS: Record<MatchStatus, string> = {
+    OPEN: 'Open match',
+    FULL: 'Full match',
+    FINISHED: 'Finished',
+    CANCELLED: 'Cancelled',
 };
+
+export const STATUS_COLORS: Record<MatchStatus, string> = {
+    OPEN: Brand.success,
+    FULL: Brand.warning,
+    FINISHED: '#8b8d98',
+    CANCELLED: Brand.danger,
+};
+
+const MAX_SLOTS = 5; // колку места се цртаат; остатокот е „+N“
 
 type Props = {
     match: Match;
@@ -24,55 +35,87 @@ type Props = {
 
 export function MatchCard({ match, linked = true }: Props) {
     const theme = useTheme();
-    const max = match.sport.numberOfPlayers;
-    const fill = Math.min(match.participantsCount / max, 1);
-    const spotsLeft = Math.max(max - match.participantsCount, 0);
     const { isFavoriteMatch } = useFavorites();
+    const max = match.sport.numberOfPlayers;
+    const spotsLeft = Math.max(max - match.participantsCount, 0);
+    const isOpen = match.status === 'OPEN';
+
+    // места: прво играчите, па празни места; ако ги има премногу → „+N“
+    const slots: (string | null)[] = [
+        ...match.participants.map((p) => p.username),
+        ...Array<null>(spotsLeft).fill(null),
+    ];
+    const shown = slots.length > MAX_SLOTS ? slots.slice(0, MAX_SLOTS - 1) : slots;
+    const hidden = slots.length - shown.length;
 
     const card = (
-        <ThemedView type="backgroundElement" style={styles.card}>
-            {/* header: icon + sport + status */}
-            <View style={styles.header}>
-                <ThemedText style={styles.emoji}>{sportEmoji(match.sport.name)}</ThemedText>
-                <View style={styles.headerText}>
-                    <ThemedText type="smallBold">{match.sport.name}</ThemedText>
-                    <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
-                        {match.venueName}
+        <Card style={styles.card}>
+            {/* горе: спорт + статус, ознаки десно */}
+            <View style={styles.top}>
+                <View style={styles.kind}>
+                    <SportIcon sport={match.sport.name} size={16} color={STATUS_COLORS[match.status]} />
+                    <ThemedText style={[styles.kindText, { color: STATUS_COLORS[match.status] }]} numberOfLines={1}>
+                        {STATUS_LABELS[match.status].toUpperCase()}
                     </ThemedText>
                 </View>
-
-                {isFavoriteMatch(match.id) && <ThemedText>❤️</ThemedText>}
-
-                <View style={[styles.badge, { backgroundColor: STATUS_COLORS[match.status] }]}>
-                    <ThemedText style={styles.badgeText}>{match.status}</ThemedText>
-                </View>
+                {isFavoriteMatch(match.id) && <ThemedText style={styles.heart}>❤️</ThemedText>}
+                <Tag label={`${durationMinutes(match.dateFrom, match.dateTo)} MIN`} />
+                <Tag label={`${match.participantsCount}/${max}`} />
             </View>
 
-            {/* time */}
-            <ThemedText type="small">
-                🕒 {formatMatchDate(match.dateFrom)} – {formatTime(match.dateTo)}
-            </ThemedText>
-
-            {/* players + progress */}
-            <View style={styles.playersRow}>
-                <ThemedText type="small" themeColor="textSecondary">
-                    {match.participantsCount}/{max} players
+            {/* кога и каде */}
+            <View>
+                <ThemedText style={styles.when}>{formatDayTime(match.dateFrom)}</ThemedText>
+                <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
+                    {match.sport.name} · {match.venueName}
                 </ThemedText>
-                {match.status === 'OPEN' && (
-                    <ThemedText type="small" style={{ color: STATUS_COLORS.OPEN }}>
+            </View>
+
+            {/* играчи и празни места */}
+            <View style={styles.slots}>
+                {shown.map((username, i) =>
+                    username ? (
+                        <View key={`p-${i}`} style={styles.slot}>
+                            <Avatar username={username} size={40} />
+                            <ThemedText style={styles.slotName} numberOfLines={1}>
+                                {username}
+                            </ThemedText>
+                        </View>
+                    ) : (
+                        <View key={`e-${i}`} style={styles.slot}>
+                            <View style={[styles.empty, { borderColor: isOpen ? theme.tint : theme.border }]}>
+                                <ThemedText style={[styles.plus, { color: isOpen ? theme.tint : theme.textSecondary }]}>
+                                    +
+                                </ThemedText>
+                            </View>
+                            <ThemedText style={[styles.slotName, { color: theme.textSecondary }]}>
+                                {isOpen ? 'Join' : 'Open'}
+                            </ThemedText>
+                        </View>
+                    ),
+                )}
+                {hidden > 0 && (
+                    <View style={styles.slot}>
+                        <View style={[styles.more, { backgroundColor: theme.backgroundSelected }]}>
+                            <ThemedText type="smallBold">+{hidden}</ThemedText>
+                        </View>
+                        <ThemedText style={[styles.slotName, { color: theme.textSecondary }]}>more</ThemedText>
+                    </View>
+                )}
+            </View>
+
+            {/* долу: организатор + слободни места */}
+            <View style={[styles.footer, { borderTopColor: theme.border }]}>
+                <ThemedText type="small" themeColor="textSecondary" numberOfLines={1} style={styles.flex}>
+                    {match.organizerUsername ? `by ${match.organizerUsername}` : ' '}
+                </ThemedText>
+                {isOpen && (
+                    <ThemedText type="smallBold" themeColor="tint">
                         {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} left
                     </ThemedText>
                 )}
             </View>
-            <View style={[styles.track, { backgroundColor: theme.backgroundSelected }]}>
-                <View
-                    style={[
-                        styles.fill,
-                        { width: `${fill * 100}%`, backgroundColor: STATUS_COLORS[match.status] },
-                    ]}
-                />
-            </View>
-        </ThemedView>
+        </Card>
     );
 
     if (!linked) {
@@ -88,47 +131,86 @@ export function MatchCard({ match, linked = true }: Props) {
 
 const styles = StyleSheet.create({
     card: {
-        padding: Spacing.three,
-        borderRadius: Spacing.three,
-        gap: Spacing.two,
+        gap: Spacing.three,
     },
     pressed: {
-        opacity: 0.7,
+        opacity: 0.85,
+        transform: [{ scale: 0.99 }],
     },
-    header: {
+    top: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.one,
+    },
+    kind: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.one,
+    },
+    kindEmoji: {
+        fontSize: 15,
+        lineHeight: 20,
+    },
+    kindText: {
+        fontSize: 11,
+        lineHeight: 14,
+        fontWeight: 800,
+        letterSpacing: 0.6,
+    },
+    heart: {
+        fontSize: 14,
+        lineHeight: 18,
+    },
+    when: {
+        fontSize: 20,
+        lineHeight: 26,
+        fontWeight: 700,
+    },
+    slots: {
+        flexDirection: 'row',
+        gap: Spacing.two,
+    },
+    slot: {
+        width: 52,
+        alignItems: 'center',
+        gap: Spacing.one,
+    },
+    slotName: {
+        fontSize: 11,
+        lineHeight: 14,
+        fontWeight: 600,
+        maxWidth: 52,
+    },
+    empty: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        borderWidth: 1.5,
+        borderStyle: 'dashed',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    plus: {
+        fontSize: 20,
+        lineHeight: 24,
+        fontWeight: 500,
+    },
+    more: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    footer: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: Spacing.two,
+        paddingTop: Spacing.two,
+        borderTopWidth: 1,
     },
-    emoji: {
-        fontSize: 28,
-        lineHeight: 34,
-    },
-    headerText: {
+    flex: {
         flex: 1,
-    },
-    badge: {
-        paddingHorizontal: Spacing.two,
-        paddingVertical: Spacing.half,
-        borderRadius: Spacing.two,
-    },
-    badgeText: {
-        color: '#ffffff',
-        fontSize: 11,
-        lineHeight: 16,
-        fontWeight: 700,
-    },
-    playersRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-    track: {
-        height: 6,
-        borderRadius: 3,
-        overflow: 'hidden',
-    },
-    fill: {
-        height: '100%',
-        borderRadius: 3,
     },
 });

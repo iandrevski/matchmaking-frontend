@@ -1,6 +1,6 @@
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet } from 'react-native';
+import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getSports, getVenues } from '@/api/client';
@@ -8,10 +8,14 @@ import type { Sport, Venue } from '@/api/types';
 import { SportFilter } from '@/components/sport-filter';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { EmptyState } from '@/components/ui/empty-state';
+import { VenueCardSkeleton } from '@/components/ui/skeleton';
 import { VenueCard } from '@/components/venue-card';
-import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
+import { BottomTabInset, Brand, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 
 export default function VenuesScreen() {
+    const theme = useTheme();
     const [venues, setVenues] = useState<Venue[]>([]);
     const [sports, setSports] = useState<Sport[]>([]);
     const [selectedSportId, setSelectedSportId] = useState<number | null>(null);
@@ -47,27 +51,36 @@ export default function VenuesScreen() {
     return (
         <ThemedView style={styles.container}>
             <SafeAreaView style={styles.safeArea}>
-                <ThemedText type="subtitle">Venues</ThemedText>
+                <View style={styles.header}>
+                    <ThemedText type="subtitle">Venues</ThemedText>
+                    <ThemedText themeColor="textSecondary">Find a place to play</ThemedText>
+                </View>
 
                 <SportFilter sports={sports} selectedId={selectedSportId} onSelect={setSelectedSportId} />
 
-                {error && <ThemedText style={styles.error}>{error}</ThemedText>}
+                {error && <ThemedText type="small" style={styles.error}>{error}</ThemedText>}
 
                 {loading ? (
-                    <ActivityIndicator size="large" style={styles.loader} />
+                    <View style={styles.list}>
+                        <VenueCardSkeleton />
+                        <VenueCardSkeleton />
+                    </View>
                 ) : (
                     <FlatList
                         data={venues}
                         keyExtractor={(item) => String(item.id)}
                         renderItem={({ item }) => <VenueCard venue={item} />}
                         contentContainerStyle={styles.list}
-                        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+                        showsVerticalScrollIndicator={false}
+                        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.tint} />}
                         ListEmptyComponent={
                             !error ? (
-                                <ThemedText themeColor="textSecondary">
-                                    {selectedSportId ? 'No venues for this sport yet.' : 'No venues yet.'}
-                                </ThemedText>
-                            ) : null
+                                <EmptyState
+                                    icon="map-pin"
+                                    title={selectedSportId ? 'No venues for this sport yet' : 'No venues yet'}
+                                    text="New places are added by venue owners."
+                                />
+                            ) : undefined
                         }
                     />
                 )}
@@ -85,18 +98,19 @@ const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
         maxWidth: MaxContentWidth,
-        paddingHorizontal: Spacing.four,
-        paddingTop: TopTabInset + Spacing.four,
+        paddingHorizontal: Spacing.three,
+        paddingTop: TopTabInset + Spacing.three,
         gap: Spacing.three,
+    },
+    header: {
+        paddingHorizontal: Spacing.one,
     },
     list: {
         gap: Spacing.three,
-        paddingBottom: BottomTabInset + Spacing.three,
-    },
-    loader: {
-        marginTop: Spacing.five,
+        paddingTop: Spacing.one,
+        paddingBottom: BottomTabInset + Spacing.four,
     },
     error: {
-        color: '#e5484d',
+        color: Brand.danger,
     },
 });

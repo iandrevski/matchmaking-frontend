@@ -1,6 +1,6 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getMatches, getSports } from '@/api/client';
@@ -10,7 +10,8 @@ import { MiniCalendar } from '@/components/mini-calendar';
 import { SportFilter } from '@/components/sport-filter';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
+import { BottomTabInset, Brand, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
+import { MatchCardSkeleton } from '@/components/ui/skeleton';
 
 export default function MatchesScreen() {
     const params = useLocalSearchParams<{ sportId?: string }>();
@@ -82,7 +83,10 @@ export default function MatchesScreen() {
                 {error && <ThemedText style={styles.error}>{error}</ThemedText>}
 
                 {loading ? (
-                    <ActivityIndicator size="large" style={styles.loader} />
+                    <View style={styles.list}>
+                        <MatchCardSkeleton />
+                        <MatchCardSkeleton />
+                    </View>
                 ) : (
                     <FlatList
                         data={matches}
@@ -95,7 +99,7 @@ export default function MatchesScreen() {
                                 <ThemedText themeColor="textSecondary">
                                     {selectedSportId || selectedDate ? 'No matches for these filters.' : 'No matches yet.'}
                                 </ThemedText>
-                            ) : null
+                            ) : undefined
                         }
                     />
                 )}
@@ -123,7 +127,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     newButton: {
-        backgroundColor: '#3c87f7',
+        backgroundColor: Brand.primary,
         paddingHorizontal: Spacing.three,
         paddingVertical: Spacing.two,
         borderRadius: Spacing.three,

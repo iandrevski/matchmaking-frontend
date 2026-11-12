@@ -6,7 +6,7 @@ import type {
     MatchStatus, Message, MyMatchReviews,
     NearbyMatch,
     Player, PlayerReviewSummary,
-    RegisterRequest, ReviewInput,
+    RegisterRequest, ReportRequest, ReviewInput,
     Sport,
     UpdatePlayerRequest,
     User,
@@ -266,3 +266,7 @@ export const markNotificationRead = (id: number) =>
 
 export const markAllNotificationsRead = () =>
     apiFetch<{ count: number }>('/notifications/read-all', { method: 'POST' });
+
+// ---------- Reports ----------
+export const reportPlayer = (playerId: number, body: ReportRequest) =>
+    apiFetch<void>(`/players/${playerId}/reports`, { method: 'POST', body: JSON.stringify(body) });

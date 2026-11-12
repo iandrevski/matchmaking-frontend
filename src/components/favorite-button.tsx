@@ -3,6 +3,8 @@ import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTheme } from '@/hooks/use-theme';
+import { useToast } from '@/feedback/toast-context';
+import { haptic } from '@/utils/haptics';
 
 type Props = {
     active: boolean;
@@ -11,12 +13,17 @@ type Props = {
 
 export function FavoriteButton({ active, onToggle }: Props) {
     const theme = useTheme();
+    const toast = useToast();
     const [busy, setBusy] = useState(false);
 
     async function press() {
         setBusy(true);
         try {
             await onToggle();
+            haptic.tap();
+            toast({ message: active ? 'Removed from favorites' : 'Saved to favorites', tone: 'info' });
+        } catch {
+            toast({ message: 'Could not update favorites', tone: 'error' });
         } finally {
             setBusy(false);
         }

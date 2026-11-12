@@ -18,18 +18,25 @@ import { useAuth } from '@/auth/auth-context';
 import { avatarColor } from '@/components/player-lineup';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Icon } from '@/components/ui/icon';
+import { ScreenHeader } from '@/components/ui/screen-header';
+import { Skeleton } from '@/components/ui/skeleton';
+import { BottomTabInset, Brand, FontFamily, MaxContentWidth, Radius, Spacing, TopTabInset } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { formatMatchDate, formatTime } from '@/utils/format';
-import { sportEmoji } from '@/utils/sports';
+import { formatDayLabel, formatDayTime, formatTime } from '@/utils/format';
+import { haptic } from '@/utils/haptics';
 
 const POLL_MS = 3000;
-const ACCENT = '#3c87f7';
 
 // нови пораки се додаваат без дупликати (иста порака може да дојде од праќање и од polling)
 function merge(current: Message[], incoming: Message[]) {
     const known = new Set(current.map((m) => m.id));
     return [...current, ...incoming.filter((m) => !known.has(m.id))];
+}
+
+function sameDay(a: string, b: string) {
+    return new Date(a).toDateString() === new Date(b).toDateString();
 }
 
 export default function MatchChatScreen() {
@@ -78,6 +85,7 @@ export default function MatchChatScreen() {
     async function onSend() {
         const body = text.trim();
         if (!body || sending) return;
+        haptic.tap();
         setSending(true);
         try {
             const sent = await sendMessage(matchId, body);
@@ -86,6 +94,7 @@ export default function MatchChatScreen() {
             setMessages((current) => merge(current, [sent]));
             setError(null);
         } catch (e) {
+            haptic.error();
             setError(e instanceof Error ? e.message : 'Could not send');
         } finally {
             setSending(false);
@@ -94,29 +103,33 @@ export default function MatchChatScreen() {
 
     // inverted листа: најновата порака е долу, до полето за пишување
     const reversed = [...messages].reverse();
+    const canSend = text.trim() !== '' && !sending;
 
     return (
         <ThemedView style={styles.container}>
             <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
                 <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-                    <View style={styles.header}>
-                        <ThemedText type="subtitle">💬 Lobby</ThemedText>
-                        {match && (
-                            <ThemedText type="small" themeColor="textSecondary">
-                                {sportEmoji(match.sport.name)} {match.sport.name} · {match.venueName} ·{' '}
-                                {formatMatchDate(match.dateFrom)}
-                            </ThemedText>
-                        )}
+                    <View style={[styles.header, { borderBottomColor: theme.border }]}>
+                        <ScreenHeader
+                            title="Lobby chat"
+                            subtitle={match ? `${match.sport.name} · ${match.venueName} · ${formatDayTime(match.dateFrom)}` : undefined}
+                            fallback={{ pathname: '/matches/[id]', params: { id: matchId } }}
+                        />
                     </View>
 
                     {loading ? (
-                        <ActivityIndicator size="large" style={styles.flex} />
+                        <View style={styles.skeleton}>
+                            <Skeleton width="55%" height={44} radius={20} />
+                            <Skeleton width="40%" height={44} radius={20} style={styles.skeletonMine} />
+                            <Skeleton width="65%" height={60} radius={20} />
+                        </View>
                     ) : messages.length === 0 ? (
                         <View style={styles.empty}>
-                            <ThemedText style={styles.emptyIcon}>👋</ThemedText>
-                            <ThemedText type="small" themeColor="textSecondary">
-                                No messages yet. Say hi to your teammates!
-                            </ThemedText>
+                            <EmptyState
+                                icon="message-circle"
+                                title="No messages yet"
+                                text="Say hi and agree on the details: shirts, ball, who brings water."
+                            />
                         </View>
                     ) : (
                         <FlatList
@@ -125,45 +138,70 @@ export default function MatchChatScreen() {
                             inverted
                             keyExtractor={(item) => String(item.id)}
                             contentContainerStyle={styles.list}
+                            showsVerticalScrollIndicator={false}
                             renderItem={({ item, index }) => {
-                                // името се покажува само кога се менува испраќачот (inverted: претходната е index + 1)
-                                const previous = reversed[index + 1];
+                                // inverted: постарата порака е index + 1, поновата index - 1
+                                const older = reversed[index + 1];
+                                const newer = reversed[index - 1];
+                                const newDay = !older || !sameDay(older.createdAt, item.createdAt);
+                                const firstOfGroup = newDay || older.senderId !== item.senderId;
+                                const lastOfGroup =
+                                    !newer || newer.senderId !== item.senderId || !sameDay(newer.createdAt, item.createdAt);
                                 return (
-                                    <Bubble
-                                        message={item}
-                                        mine={item.senderId === user?.id}
-                                        showName={!previous || previous.senderId !== item.senderId}
-                                    />
+                                    <View>
+                                        {newDay && (
+                                            <View style={styles.dayRow}>
+                                                <View style={[styles.dayChip, { backgroundColor: theme.backgroundSelected }]}>
+                                                    <ThemedText style={styles.dayText} themeColor="textSecondary">
+                                                        {formatDayLabel(item.createdAt)}
+                                                    </ThemedText>
+                                                </View>
+                                            </View>
+                                        )}
+                                        <Bubble
+                                            message={item}
+                                            mine={item.senderId === user?.id}
+                                            firstOfGroup={firstOfGroup}
+                                            lastOfGroup={lastOfGroup}
+                                        />
+                                    </View>
                                 );
                             }}
                         />
                     )}
 
-                    {error && <ThemedText style={styles.error}>{error}</ThemedText>}
-
-                    <View style={styles.inputBar}>
-                        <TextInput
-                            style={[styles.input, { color: theme.text, backgroundColor: theme.backgroundElement }]}
-                            placeholder="Message your teammates…"
-                            placeholderTextColor={theme.textSecondary}
-                            value={text}
-                            onChangeText={setText}
-                            onSubmitEditing={onSend}
-                            submitBehavior="submit"
-                            returnKeyType="send"
-                            maxLength={500}
-                        />
-                        <Pressable
-                            onPress={onSend}
-                            disabled={!text.trim() || sending}
-                            accessibilityLabel="Send message"
-                            style={({ pressed }) => [
-                                styles.send,
-                                (!text.trim() || sending) && styles.sendDisabled,
-                                pressed && styles.pressed,
-                            ]}>
-                            {sending ? <ActivityIndicator color="#ffffff" /> : <ThemedText style={styles.sendIcon}>➤</ThemedText>}
-                        </Pressable>
+                    <View style={[styles.inputBar, { backgroundColor: theme.backgroundElement, borderTopColor: theme.border }]}>
+                        {error && (
+                            <ThemedText type="small" style={styles.error}>
+                                {error}
+                            </ThemedText>
+                        )}
+                        <View style={styles.inputRow}>
+                            <TextInput
+                                style={[styles.input, { color: theme.text, backgroundColor: theme.background, borderColor: theme.border }]}
+                                placeholder="Message your teammates…"
+                                placeholderTextColor={theme.textSecondary}
+                                value={text}
+                                onChangeText={setText}
+                                onSubmitEditing={onSend}
+                                submitBehavior="submit"
+                                returnKeyType="send"
+                                maxLength={500}
+                                accessibilityLabel="Message"
+                            />
+                            <Pressable
+                                onPress={onSend}
+                                disabled={!canSend}
+                                accessibilityRole="button"
+                                accessibilityLabel="Send message"
+                                style={({ pressed }) => [styles.send, !canSend && styles.sendDisabled, pressed && styles.pressed]}>
+                                {sending ? (
+                                    <ActivityIndicator color={Brand.onPrimary} />
+                                ) : (
+                                    <Icon name="arrow-up" size={22} color={Brand.onPrimary} />
+                                )}
+                            </Pressable>
+                        </View>
                     </View>
                 </KeyboardAvoidingView>
             </SafeAreaView>
@@ -171,14 +209,22 @@ export default function MatchChatScreen() {
     );
 }
 
-function Bubble({ message, mine, showName }: { message: Message; mine: boolean; showName: boolean }) {
+type BubbleProps = {
+    message: Message;
+    mine: boolean;
+    firstOfGroup: boolean; // прва од низа пораки од ист човек: име
+    lastOfGroup: boolean; // последна: аватар и „опашка“
+};
+
+function Bubble({ message, mine, firstOfGroup, lastOfGroup }: BubbleProps) {
     const theme = useTheme();
+    const color = avatarColor(message.senderUsername);
 
     return (
-        <View style={[styles.bubbleRow, mine && styles.bubbleRowMine]}>
+        <View style={[styles.bubbleRow, mine && styles.bubbleRowMine, firstOfGroup && styles.groupGap]}>
             {!mine && (
-                <View style={[styles.avatar, { backgroundColor: showName ? avatarColor(message.senderUsername) : 'transparent' }]}>
-                    {showName && (
+                <View style={[styles.avatar, { backgroundColor: lastOfGroup ? color : 'transparent' }]}>
+                    {lastOfGroup && (
                         <ThemedText style={styles.avatarText}>{message.senderUsername.charAt(0).toUpperCase()}</ThemedText>
                     )}
                 </View>
@@ -186,14 +232,14 @@ function Bubble({ message, mine, showName }: { message: Message; mine: boolean; 
             <View
                 style={[
                     styles.bubble,
-                    mine ? styles.bubbleMine : { backgroundColor: theme.backgroundElement },
+                    mine
+                        ? [styles.bubbleMine, lastOfGroup && styles.tailMine]
+                        : [{ backgroundColor: theme.backgroundElement, borderColor: theme.border }, styles.bubbleOther, lastOfGroup && styles.tailOther],
                 ]}>
-                {!mine && showName && (
-                    <ThemedText type="smallBold" style={{ color: avatarColor(message.senderUsername) }}>
-                        {message.senderUsername}
-                    </ThemedText>
+                {!mine && firstOfGroup && (
+                    <ThemedText style={[styles.sender, { color }]}>{message.senderUsername}</ThemedText>
                 )}
-                <ThemedText style={mine && styles.mineText}>{message.text}</ThemedText>
+                <ThemedText style={[styles.body, mine && styles.mineText]}>{message.text}</ThemedText>
                 <ThemedText style={[styles.time, mine ? styles.mineTime : { color: theme.textSecondary }]}>
                     {formatTime(message.createdAt)}
                 </ThemedText>
@@ -212,62 +258,102 @@ const styles = StyleSheet.create({
         flex: 1,
         maxWidth: MaxContentWidth,
         paddingTop: TopTabInset,
-        paddingBottom: BottomTabInset,
     },
     flex: {
         flex: 1,
     },
     header: {
-        paddingHorizontal: Spacing.four,
-        paddingTop: Spacing.four,
-        paddingBottom: Spacing.two,
-    },
-    list: {
         paddingHorizontal: Spacing.three,
-        paddingVertical: Spacing.two,
-        gap: Spacing.one,
+        paddingTop: Spacing.three,
+        paddingBottom: Spacing.three,
+        borderBottomWidth: 1,
+    },
+    skeleton: {
+        flex: 1,
+        justifyContent: 'flex-end',
+        padding: Spacing.three,
+        gap: Spacing.two,
+    },
+    skeletonMine: {
+        alignSelf: 'flex-end',
     },
     empty: {
         flex: 1,
-        alignItems: 'center',
         justifyContent: 'center',
-        gap: Spacing.one,
+        padding: Spacing.three,
     },
-    emptyIcon: {
-        fontSize: 36,
-        lineHeight: 44,
+    list: {
+        paddingHorizontal: Spacing.three,
+        paddingVertical: Spacing.three,
+        gap: 3,
+    },
+    dayRow: {
+        alignItems: 'center',
+        marginVertical: Spacing.three,
+    },
+    dayChip: {
+        paddingHorizontal: Spacing.three,
+        height: 26,
+        justifyContent: 'center',
+        borderRadius: Radius.pill,
+    },
+    dayText: {
+        fontSize: 12,
+        lineHeight: 16,
+        fontWeight: 700,
     },
     bubbleRow: {
         flexDirection: 'row',
         alignItems: 'flex-end',
         gap: Spacing.two,
-        maxWidth: '85%',
+        maxWidth: '82%',
     },
     bubbleRowMine: {
         alignSelf: 'flex-end',
     },
+    groupGap: {
+        marginTop: Spacing.two,
+    },
     avatar: {
-        width: 28,
-        height: 28,
-        borderRadius: 14,
+        width: 30,
+        height: 30,
+        borderRadius: 15,
         alignItems: 'center',
         justifyContent: 'center',
     },
     avatarText: {
         color: '#ffffff',
-        fontSize: 12,
-        lineHeight: 16,
-        fontWeight: 700,
+        fontSize: 13,
+        lineHeight: 18,
+        fontWeight: 800,
     },
     bubble: {
-        paddingHorizontal: Spacing.three,
+        paddingHorizontal: 14,
         paddingVertical: Spacing.two,
-        borderRadius: 18,
+        borderRadius: 20,
         flexShrink: 1,
+        gap: 2,
     },
     bubbleMine: {
-        backgroundColor: ACCENT,
-        borderBottomRightRadius: 4,
+        backgroundColor: Brand.primary,
+    },
+    bubbleOther: {
+        borderWidth: 1,
+    },
+    tailMine: {
+        borderBottomRightRadius: 6,
+    },
+    tailOther: {
+        borderBottomLeftRadius: 6,
+    },
+    sender: {
+        fontSize: 13,
+        lineHeight: 18,
+        fontWeight: 800,
+    },
+    body: {
+        fontSize: 15,
+        lineHeight: 21,
     },
     mineText: {
         color: '#ffffff',
@@ -278,42 +364,43 @@ const styles = StyleSheet.create({
         alignSelf: 'flex-end',
     },
     mineTime: {
-        color: 'rgba(255,255,255,0.75)',
+        color: 'rgba(255,255,255,0.72)',
     },
     error: {
-        color: '#e5484d',
+        color: Brand.danger,
         textAlign: 'center',
-        paddingHorizontal: Spacing.four,
     },
     inputBar: {
+        paddingHorizontal: Spacing.three,
+        paddingTop: Spacing.two,
+        paddingBottom: BottomTabInset + Spacing.two,
+        borderTopWidth: 1,
+        gap: Spacing.one,
+    },
+    inputRow: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: Spacing.two,
-        paddingHorizontal: Spacing.three,
-        paddingVertical: Spacing.two,
     },
     input: {
+        fontFamily: FontFamily.medium,
         flex: 1,
+        height: 46,
         paddingHorizontal: Spacing.three,
-        paddingVertical: Spacing.two,
-        borderRadius: 22,
+        borderRadius: Radius.pill,
+        borderWidth: 1,
         fontSize: 16,
     },
     send: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
-        backgroundColor: ACCENT,
+        width: 46,
+        height: 46,
+        borderRadius: 23,
+        backgroundColor: Brand.primary,
         alignItems: 'center',
         justifyContent: 'center',
     },
     sendDisabled: {
-        opacity: 0.4,
-    },
-    sendIcon: {
-        color: '#ffffff',
-        fontSize: 18,
-        lineHeight: 22,
+        opacity: 0.35,
     },
     pressed: {
         opacity: 0.8,

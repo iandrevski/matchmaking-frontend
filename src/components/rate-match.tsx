@@ -8,7 +8,7 @@ import { Chip } from '@/components/chip';
 import { StarRating } from '@/components/star-rating';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { Brand, FontFamily, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { formatMatchDate } from '@/utils/format';
 import { REVIEW_TAG_LABELS, REVIEW_TAGS } from '@/utils/review-tags';
@@ -115,7 +115,7 @@ export function RateMatch({ match, currentUserId }: Props) {
                         <View style={styles.playerRow}>
                             <Pressable
                                 onPress={() => router.push({ pathname: '/matches/player/[id]', params: { id: player.id } })}>
-                                <ThemedText type="smallBold" style={styles.link}>
+                                <ThemedText type="smallBold" themeColor="tint" style={styles.link}>
                                     {player.username}
                                 </ThemedText>
                             </Pressable>
@@ -193,7 +193,6 @@ const styles = StyleSheet.create({
         gap: Spacing.two,
     },
     link: {
-        color: '#3c87f7',
     },
     tags: {
         flexDirection: 'row',
@@ -201,6 +200,7 @@ const styles = StyleSheet.create({
         gap: Spacing.one,
     },
     input: {
+        fontFamily: FontFamily.medium,
         minHeight: 64,
         paddingHorizontal: Spacing.three,
         paddingVertical: Spacing.two,
@@ -212,10 +212,10 @@ const styles = StyleSheet.create({
         color: '#e5484d',
     },
     success: {
-        color: '#30a46c',
+        color: Brand.success,
     },
     button: {
-        backgroundColor: '#3c87f7',
+        backgroundColor: Brand.primary,
         paddingVertical: Spacing.three,
         borderRadius: Spacing.three,
         alignItems: 'center',

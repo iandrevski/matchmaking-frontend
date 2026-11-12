@@ -8,6 +8,7 @@ import { StarRating } from '@/components/star-rating';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { SectionTitle } from '@/components/ui/section-title';
 
 export function VenueReviews({ venueId }: { venueId: number }) {
     const [data, setData] = useState<VenueReviewsData | null>(null);
@@ -25,7 +26,7 @@ export function VenueReviews({ venueId }: { venueId: number }) {
     return (
         <View style={styles.section}>
             <View style={styles.header}>
-                <ThemedText type="smallBold">Reviews</ThemedText>
+                <SectionTitle>Reviews</SectionTitle>
                 {data.averageStars !== null && (
                     <View style={styles.summary}>
                         <StarRating value={data.averageStars} size={16} />

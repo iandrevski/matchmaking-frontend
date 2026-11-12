@@ -9,6 +9,7 @@ import { MiniCalendar } from '@/components/mini-calendar';
 import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { toIsoDate } from '@/utils/calendar';
+import { SectionTitle } from '@/components/ui/section-title';
 
 type Props = {
     venue: Venue;
@@ -36,7 +37,7 @@ export function VenueAvailability({ venue, canBook }: Props) {
 
     return (
         <View style={styles.section}>
-            <ThemedText type="smallBold">Availability</ThemedText>
+            <SectionTitle>Availability</SectionTitle>
             <MiniCalendar
                 selectedDate={date}
                 onSelect={(selected) => selected && setDate(selected)}
