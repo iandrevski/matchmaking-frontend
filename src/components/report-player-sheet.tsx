@@ -17,7 +17,7 @@ import type { ReportReason } from '@/api/types';
 import { avatarColor } from '@/components/player-lineup';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Brand, MaxContentWidth, Spacing } from '@/constants/theme';
+import { Brand, FontFamily, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 type ReasonOption = { value: ReportReason; emoji: string; label: string; placeholder: string };
@@ -308,6 +308,7 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   input: {
+    fontFamily: FontFamily.medium,
     minHeight: 96,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.three,

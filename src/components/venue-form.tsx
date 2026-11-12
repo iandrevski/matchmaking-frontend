@@ -7,7 +7,7 @@ import type { Sport, Venue, VenueRequest } from '@/api/types';
 import { Chip } from '@/components/chip';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { BottomTabInset, Brand, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
+import { BottomTabInset, Brand, FontFamily, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { sportEmoji } from '@/utils/sports';
 
@@ -161,6 +161,7 @@ const styles = StyleSheet.create({
         gap: Spacing.three,
     },
     input: {
+        fontFamily: FontFamily.medium,
         paddingHorizontal: Spacing.three,
         paddingVertical: Spacing.three,
         borderRadius: Spacing.three,

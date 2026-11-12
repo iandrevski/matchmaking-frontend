@@ -67,7 +67,7 @@ export default function VenuesScreen() {
                                 <ThemedText themeColor="textSecondary">
                                     {selectedSportId ? 'No venues for this sport yet.' : 'No venues yet.'}
                                 </ThemedText>
-                            ) : null
+                            ) : undefined
                         }
                     />
                 )}

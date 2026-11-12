@@ -15,6 +15,8 @@ import { Card } from '@/components/ui/card';
 import { BottomTabInset, Brand, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { REVIEW_TAG_LABELS } from '@/utils/review-tags';
+import { Icon, IconBadge } from '@/components/ui/icon';
+import { ScreenHeader } from '@/components/ui/screen-header';
 
 // јавен профил на играч: „со кого ќе играм?“
 export default function PlayerProfileScreen() {
@@ -52,6 +54,8 @@ export default function PlayerProfileScreen() {
         <ThemedView style={styles.container}>
             <SafeAreaView style={styles.safeArea}>
                 <ScrollView contentContainerStyle={styles.content}>
+                    <ScreenHeader fallback="/matches" />
+
                     {/* hero: кој е играчот */}
                     <Card variant="dark" style={styles.hero}>
                         <Avatar username={summary.username} size={88} ring="rgba(255,255,255,0.9)" />
@@ -108,14 +112,14 @@ export default function PlayerProfileScreen() {
                             accessibilityRole="button"
                             style={({ pressed }) => pressed && styles.pressed}>
                             <Card style={styles.report}>
-                                <ThemedText style={styles.reportIcon}>🚩</ThemedText>
+                                <IconBadge name="flag" size={38} danger />
                                 <View style={styles.reportBody}>
                                     <ThemedText type="smallBold">Had a problem with {summary.username}?</ThemedText>
                                     <ThemedText type="small" themeColor="textSecondary">
                                         Let us know. It stays private.
                                     </ThemedText>
                                 </View>
-                                <ThemedText themeColor="textSecondary">›</ThemedText>
+                                <Icon name="chevron-right" size={18} tone="textSecondary" />
                             </Card>
                         </Pressable>
                     )}

@@ -1,4 +1,12 @@
 import { DarkTheme, DefaultTheme, ThemeProvider, type Theme } from 'expo-router';
+import {
+    PlusJakartaSans_400Regular,
+    PlusJakartaSans_500Medium,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
+    PlusJakartaSans_800ExtraBold,
+    useFonts,
+} from '@expo-google-fonts/plus-jakarta-sans';
 import * as SplashScreen from 'expo-splash-screen';
 import { ActivityIndicator, StyleSheet, useColorScheme } from 'react-native';
 
@@ -55,6 +63,19 @@ function RootNavigator() {
 
 export default function RootLayout() {
     const colorScheme = useColorScheme();
+    const [fontsLoaded, fontError] = useFonts({
+        PlusJakartaSans_400Regular,
+        PlusJakartaSans_500Medium,
+        PlusJakartaSans_600SemiBold,
+        PlusJakartaSans_700Bold,
+        PlusJakartaSans_800ExtraBold,
+    });
+
+    // splash-от останува додека не се вчита фонтот (ако падне, продолжи со системскиот)
+    if (!fontsLoaded && !fontError) {
+        return null;
+    }
+
     return (
         <AuthProvider>
             <FavoritesProvider>

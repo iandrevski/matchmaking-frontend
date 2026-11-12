@@ -100,3 +100,21 @@ export const Spacing = {
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const TopTabInset = Platform.select({ web: 80 }) ?? 0;
 export const MaxContentWidth = 800;
+
+// Plus Jakarta Sans: на телефон тежината се бира со посебно име на фонт, не со fontWeight
+export const FontFamily = {
+  regular: 'PlusJakartaSans_400Regular',
+  medium: 'PlusJakartaSans_500Medium',
+  semibold: 'PlusJakartaSans_600SemiBold',
+  bold: 'PlusJakartaSans_700Bold',
+  extrabold: 'PlusJakartaSans_800ExtraBold',
+} as const;
+
+export function fontForWeight(weight?: string | number) {
+  const w = weight === 'bold' ? 700 : weight === undefined || weight === 'normal' ? 500 : Number(weight);
+  if (w >= 800) return FontFamily.extrabold;
+  if (w >= 700) return FontFamily.bold;
+  if (w >= 600) return FontFamily.semibold;
+  if (w >= 500) return FontFamily.medium;
+  return FontFamily.regular;
+}

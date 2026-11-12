@@ -95,7 +95,7 @@ export default function MatchesScreen() {
                                 <ThemedText themeColor="textSecondary">
                                     {selectedSportId || selectedDate ? 'No matches for these filters.' : 'No matches yet.'}
                                 </ThemedText>
-                            ) : null
+                            ) : undefined
                         }
                     />
                 )}

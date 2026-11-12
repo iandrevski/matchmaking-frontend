@@ -18,7 +18,7 @@ import { useAuth } from '@/auth/auth-context';
 import { avatarColor } from '@/components/player-lineup';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { BottomTabInset, Brand, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
+import { BottomTabInset, Brand, FontFamily, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { formatMatchDate, formatTime } from '@/utils/format';
 import { sportEmoji } from '@/utils/sports';
@@ -293,6 +293,7 @@ const styles = StyleSheet.create({
         paddingVertical: Spacing.two,
     },
     input: {
+        fontFamily: FontFamily.medium,
         flex: 1,
         paddingHorizontal: Spacing.three,
         paddingVertical: Spacing.two,

@@ -17,7 +17,7 @@ import { PillButton } from '@/components/ui/pill-button';
 import { BottomTabInset, Brand, MaxContentWidth, Radius, Spacing, TopTabInset } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { upcoming } from '@/utils/matches';
-import { sportEmoji } from '@/utils/sports';
+import { IconBadge, SportIcon } from '@/components/ui/icon';
 
 // различен Home според улогата
 export default function HomeScreen() {
@@ -92,7 +92,10 @@ function PlayerHome() {
           {/* hero: поздрав + главни акции */}
           <Card variant="dark" style={styles.hero}>
             <View style={styles.heroTop}>
-              <ThemedText style={styles.brand}>⚽ Sportify</ThemedText>
+              <View style={styles.brandRow}>
+                <SportIcon sport="football" size={20} color={Brand.accent} />
+                <ThemedText style={styles.brand}>Sportify</ThemedText>
+              </View>
               <NotificationBell onDark />
             </View>
 
@@ -110,7 +113,7 @@ function PlayerHome() {
 
             <View style={styles.heroActions}>
               <PillButton
-                label="+ Create a match"
+                label="+ Create match"
                 variant="accent"
                 onPress={() => router.push('/matches/new')}
                 style={styles.flex}
@@ -137,7 +140,7 @@ function PlayerHome() {
                   { backgroundColor: theme.backgroundElement, borderColor: theme.border },
                   pressed && styles.pressed,
                 ]}>
-                <ThemedText style={styles.sportEmoji}>{sportEmoji(sport.name)}</ThemedText>
+                <SportIcon sport={sport.name} size={18} color={theme.tint} />
                 <ThemedText type="smallBold">{sport.name}</ThemedText>
               </Pressable>
             ))}
@@ -147,7 +150,7 @@ function PlayerHome() {
           <Section title="Your upcoming matches">
             {myMatches.length === 0 ? (
               <Card style={styles.empty}>
-                <ThemedText style={styles.emptyEmoji}>🏟️</ThemedText>
+                <IconBadge name="calendar" size={52} />
                 <ThemedText type="smallBold">No games planned yet</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary" style={styles.center}>
                   Join an open match below or create your own.
@@ -177,7 +180,7 @@ function PlayerHome() {
             }>
             {openMatches.length === 0 ? (
               <Card style={styles.empty}>
-                <ThemedText style={styles.emptyEmoji}>🙌</ThemedText>
+                <IconBadge name="users" size={52} />
                 <ThemedText type="smallBold">No open matches right now</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary" style={styles.center}>
                   Be the first. Create one and others will join.
@@ -237,6 +240,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
   },
   brand: {
     color: Brand.onDark,

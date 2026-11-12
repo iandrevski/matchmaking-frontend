@@ -6,6 +6,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Brand } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useNotifications } from '@/notifications/notifications-context';
+import { Icon } from '@/components/ui/icon';
 
 type Props = {
     onDark?: boolean; // врз темно зелен hero блок
@@ -28,7 +29,7 @@ export function NotificationBell({ onDark }: Props) {
                         : { backgroundColor: theme.backgroundElement, borderColor: theme.border, borderWidth: 1 },
                     pressed && styles.pressed,
                 ]}>
-                <ThemedText style={styles.icon}>🔔</ThemedText>
+                <Icon name="bell" size={20} color={onDark ? Brand.onDark : theme.text} />
                 {unreadCount > 0 && (
                     <View style={styles.badge}>
                         <ThemedText style={styles.badgeText}>{unreadCount > 99 ? '99+' : unreadCount}</ThemedText>

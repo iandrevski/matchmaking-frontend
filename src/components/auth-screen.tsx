@@ -6,8 +6,9 @@ import { useAuth } from '@/auth/auth-context';
 import { Chip } from '@/components/chip';
 import { ThemedText } from '@/components/themed-text';
 import { PillButton } from '@/components/ui/pill-button';
-import { Brand, Radius, Spacing } from '@/constants/theme';
+import { Brand, FontFamily, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { SportIcon } from '@/components/ui/icon';
 
 type Mode = 'login' | 'register';
 
@@ -61,7 +62,10 @@ export function AuthScreen() {
                     <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
                         {/* горе: бренд и порака */}
                         <View style={styles.intro}>
-                            <ThemedText style={styles.brand}>⚽ Sportify</ThemedText>
+                            <View style={styles.brandRow}>
+                                <SportIcon sport="football" size={22} color={Brand.accent} />
+                                <ThemedText style={styles.brand}>Sportify</ThemedText>
+                            </View>
                             <ThemedText style={styles.headline}>
                                 Find your game.{'\n'}
                                 <ThemedText style={[styles.headline, styles.accent]}>Meet your team.</ThemedText>
@@ -178,6 +182,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: Spacing.two,
         gap: Spacing.three,
     },
+    brandRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.two,
+    },
     brand: {
         color: Brand.onDark,
         fontWeight: 800,
@@ -212,6 +221,7 @@ const styles = StyleSheet.create({
         gap: Spacing.two,
     },
     input: {
+        fontFamily: FontFamily.medium,
         height: 52,
         paddingHorizontal: Spacing.three,
         borderRadius: Radius.md,

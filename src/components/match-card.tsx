@@ -10,7 +10,7 @@ import { Brand, Spacing } from '@/constants/theme';
 import { useFavorites } from '@/favorites/favorites-context';
 import { useTheme } from '@/hooks/use-theme';
 import { durationMinutes, formatDayTime } from '@/utils/format';
-import { sportEmoji } from '@/utils/sports';
+import { SportIcon } from '@/components/ui/icon';
 
 export const STATUS_LABELS: Record<MatchStatus, string> = {
     OPEN: 'Open match',
@@ -53,7 +53,7 @@ export function MatchCard({ match, linked = true }: Props) {
             {/* горе: спорт + статус, ознаки десно */}
             <View style={styles.top}>
                 <View style={styles.kind}>
-                    <ThemedText style={styles.kindEmoji}>{sportEmoji(match.sport.name)}</ThemedText>
+                    <SportIcon sport={match.sport.name} size={16} color={STATUS_COLORS[match.status]} />
                     <ThemedText style={[styles.kindText, { color: STATUS_COLORS[match.status] }]} numberOfLines={1}>
                         {STATUS_LABELS[match.status].toUpperCase()}
                     </ThemedText>

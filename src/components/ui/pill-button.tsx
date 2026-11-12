@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
   },
   md: {
     height: 50,
-    paddingHorizontal: Spacing.four,
+    paddingHorizontal: Spacing.three,
   },
   sm: {
     height: 36,

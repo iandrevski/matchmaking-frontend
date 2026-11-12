@@ -10,6 +10,7 @@ import { MatchCard } from '@/components/match-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
+import { Icon } from '@/components/ui/icon';
 
 const RADII = [5, 10, 25];
 
@@ -66,7 +67,10 @@ export function NearbyMatches() {
 
     return (
         <View style={styles.section}>
-            <ThemedText style={styles.title}>📍 Near you</ThemedText>
+            <View style={styles.titleRow}>
+                <Icon name="map-pin" size={18} tone="tint" />
+                <ThemedText style={styles.title}>Near you</ThemedText>
+            </View>
 
             <View style={styles.radii}>
                 {RADII.map((km) => (
@@ -112,6 +116,11 @@ export function NearbyMatches() {
 const styles = StyleSheet.create({
     section: {
         gap: Spacing.three,
+    },
+    titleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.two,
     },
     title: {
         fontSize: 18,

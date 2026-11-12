@@ -5,11 +5,12 @@ export function formatMatchDate(iso: string, variant: 'short' | 'long' = 'short'
         month: variant,
         hour: '2-digit',
         minute: '2-digit',
+        hour12: false,
     });
 }
 
 export function formatTime(iso: string) {
-    return new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    return new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
 // Date → "2026-10-21T18:00:00" (локално време, без Z, како што очекува backend-от)

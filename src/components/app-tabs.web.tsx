@@ -13,6 +13,7 @@ import { ThemedView } from './themed-view';
 
 import { useAuth } from '@/auth/auth-context';
 import { Brand, MaxContentWidth, Spacing } from '@/constants/theme';
+import { SportIcon } from '@/components/ui/icon';
 
 export default function AppTabs() {
   const { user } = useAuth();
@@ -45,7 +46,8 @@ export default function AppTabs() {
   );
 }
 
-export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps) {
+// ref не се проследува: типот на Pressable во SDK 58 не се совпаѓа со ref-от од TabTrigger
+export function TabButton({ children, isFocused, ref: _ref, ...props }: TabTriggerSlotProps) {
   return (
       <Pressable {...props} style={({ pressed }) => pressed && styles.pressed}>
         <ThemedView
@@ -66,9 +68,12 @@ export function CustomTabList(props: TabListProps) {
   return (
       <View {...props} style={styles.tabListContainer}>
         <ThemedView type="backgroundElement" style={styles.innerContainer}>
-          <ThemedText type="smallBold" themeColor="tint" style={styles.brandText}>
-            ⚽ Sportify
-          </ThemedText>
+          <View style={styles.brandText}>
+            <SportIcon sport="football" size={18} color={Brand.primary} />
+            <ThemedText type="smallBold" themeColor="tint">
+              Sportify
+            </ThemedText>
+          </View>
 
           {props.children}
         </ThemedView>
@@ -97,6 +102,9 @@ const styles = StyleSheet.create({
   },
   brandText: {
     marginRight: 'auto',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.one,
   },
   pressed: {
     opacity: 0.7,

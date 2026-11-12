@@ -8,7 +8,7 @@ import { Chip } from '@/components/chip';
 import { StarRating } from '@/components/star-rating';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Brand, Spacing } from '@/constants/theme';
+import { Brand, FontFamily, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { formatMatchDate } from '@/utils/format';
 import { REVIEW_TAG_LABELS, REVIEW_TAGS } from '@/utils/review-tags';
@@ -200,6 +200,7 @@ const styles = StyleSheet.create({
         gap: Spacing.one,
     },
     input: {
+        fontFamily: FontFamily.medium,
         minHeight: 64,
         paddingHorizontal: Spacing.three,
         paddingVertical: Spacing.two,

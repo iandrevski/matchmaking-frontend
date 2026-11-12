@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { cancelMatch, getMatch, joinMatch, leaveMatch } from '@/api/client';
@@ -14,13 +14,14 @@ import { RateMatch } from '@/components/rate-match';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Card } from '@/components/ui/card';
+import { SportIcon } from '@/components/ui/icon';
 import { PillButton } from '@/components/ui/pill-button';
+import { ScreenHeader } from '@/components/ui/screen-header';
 import { Tag } from '@/components/ui/tag';
 import { BottomTabInset, Brand, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
 import { useFavorites } from '@/favorites/favorites-context';
 import { useTheme } from '@/hooks/use-theme';
 import { durationMinutes, formatDayTime, formatTime } from '@/utils/format';
-import { sportEmoji } from '@/utils/sports';
 
 export default function MatchDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
@@ -94,28 +95,40 @@ export default function MatchDetailsScreen() {
     const isParticipant = user ? match.participantIds.includes(user.id) : false;
     const isOrganizer = user?.id === match.organizerId;
     const canJoin = !isParticipant && match.status === 'OPEN';
+    const isPlayer = user?.role === 'ROLE_USER';
+
+    // текст до копчето долу
+    const footerTitle = isParticipant && isActive
+        ? "You're in"
+        : match.status === 'OPEN'
+          ? `${spotsLeft} ${spotsLeft === 1 ? 'spot' : 'spots'} left`
+          : STATUS_LABELS[match.status];
+    const footerSubtitle = isParticipant && isActive ? 'See you on the field' : 'Free to join';
 
     return (
         <ThemedView style={styles.container}>
             <SafeAreaView style={styles.safeArea}>
                 <ScrollView contentContainerStyle={styles.content}>
+                    <ScreenHeader
+                        fallback="/matches"
+                        right={
+                            isPlayer && (
+                                <FavoriteButton active={isFavoriteMatch(match.id)} onToggle={() => toggleMatch(match.id)} />
+                            )
+                        }
+                    />
+
                     {/* hero: што, кога, каде */}
                     <Card variant="dark" style={styles.hero}>
-                        <View style={styles.heroTop}>
-                            <View style={[styles.status, { backgroundColor: STATUS_COLORS[match.status] }]}>
-                                <ThemedText style={styles.statusText}>
-                                    {STATUS_LABELS[match.status].toUpperCase()}
-                                </ThemedText>
-                            </View>
-                            {user?.role === 'ROLE_USER' && (
-                                <FavoriteButton active={isFavoriteMatch(match.id)} onToggle={() => toggleMatch(match.id)} />
-                            )}
+                        <View style={[styles.status, { backgroundColor: STATUS_COLORS[match.status] }]}>
+                            <ThemedText style={styles.statusText}>{STATUS_LABELS[match.status].toUpperCase()}</ThemedText>
                         </View>
 
                         <View>
-                            <ThemedText style={styles.heroSport}>
-                                {sportEmoji(match.sport.name)} {match.sport.name}
-                            </ThemedText>
+                            <View style={styles.sportRow}>
+                                <SportIcon sport={match.sport.name} size={18} color={Brand.accent} />
+                                <ThemedText style={styles.heroSport}>{match.sport.name}</ThemedText>
+                            </View>
                             <ThemedText style={styles.heroWhen}>{formatDayTime(match.dateFrom)}</ThemedText>
                             <ThemedText style={styles.heroMuted}>until {formatTime(match.dateTo)}</ThemedText>
                         </View>
@@ -123,9 +136,6 @@ export default function MatchDetailsScreen() {
                         <View style={styles.tags}>
                             <Tag variant="onDark" label={`${durationMinutes(match.dateFrom, match.dateTo)} MIN`} />
                             <Tag variant="onDark" label={`${match.participantsCount}/${max} PLAYERS`} />
-                            {match.status === 'OPEN' && (
-                                <Tag variant="onDark" label={`${spotsLeft} ${spotsLeft === 1 ? 'SPOT' : 'SPOTS'} LEFT`} />
-                            )}
                         </View>
 
                         <View style={[styles.heroInfo, { borderTopColor: Brand.onDarkFaint }]}>
@@ -142,7 +152,12 @@ export default function MatchDetailsScreen() {
                     )}
 
                     <View style={styles.section}>
-                        <ThemedText style={styles.sectionTitle}>Players</ThemedText>
+                        <View style={styles.sectionHeader}>
+                            <ThemedText style={styles.sectionTitle}>Players</ThemedText>
+                            <ThemedText type="small" themeColor="textSecondary">
+                                {match.participantsCount} of {max}
+                            </ThemedText>
+                        </View>
                         <PlayerLineup
                             match={match}
                             currentUserId={user?.id}
@@ -155,41 +170,58 @@ export default function MatchDetailsScreen() {
                         </ThemedText>
                     </View>
 
-                    {error && (
-                        <View style={styles.errorBox}>
-                            <ThemedText type="small" style={styles.error}>
-                                {error}
-                            </ThemedText>
-                        </View>
+                    {error && !isActive && (
+                        <ThemedText type="small" style={styles.error}>
+                            {error}
+                        </ThemedText>
                     )}
 
-                    <View style={styles.actions}>
-                        {isParticipant && isActive ? (
-                            <PillButton
-                                label="Leave match"
-                                variant="danger"
-                                loading={submitting}
-                                onPress={() => runAction(leaveMatch)}
-                            />
-                        ) : (
-                            <PillButton
-                                label={canJoin ? 'Join match' : STATUS_LABELS[match.status]}
-                                disabled={!canJoin}
-                                loading={submitting}
-                                onPress={() => runAction(joinMatch)}
-                            />
-                        )}
-
-                        {isOrganizer && isActive && (
-                            <PillButton
-                                label={confirmCancel ? 'Tap again to cancel the match' : 'Cancel match'}
-                                variant="outline"
-                                loading={submitting}
-                                onPress={onCancelPress}
-                            />
-                        )}
-                    </View>
+                    {isOrganizer && isActive && (
+                        <Pressable onPress={onCancelPress} disabled={submitting} style={styles.cancel} hitSlop={8}>
+                            <ThemedText type="smallBold" style={styles.cancelText}>
+                                {confirmCancel ? 'Tap again to cancel the match' : 'Cancel match'}
+                            </ThemedText>
+                        </Pressable>
+                    )}
                 </ScrollView>
+
+                {/* главната акција е секогаш долу, на дофат на палецот (само за активни натпревари) */}
+                {isPlayer && isActive && (
+                    <View style={[styles.footer, { backgroundColor: theme.backgroundElement, borderTopColor: theme.border }]}>
+                        {error && (
+                            <ThemedText type="small" style={styles.error} numberOfLines={2}>
+                                {error}
+                            </ThemedText>
+                        )}
+                        <View style={styles.footerRow}>
+                            <View style={styles.flex}>
+                                <ThemedText style={styles.footerTitle}>{footerTitle}</ThemedText>
+                                {isActive && (
+                                    <ThemedText type="small" themeColor="textSecondary">
+                                        {footerSubtitle}
+                                    </ThemedText>
+                                )}
+                            </View>
+                            {isParticipant && isActive ? (
+                                <PillButton
+                                    label="Leave"
+                                    variant="danger"
+                                    loading={submitting}
+                                    onPress={() => runAction(leaveMatch)}
+                                    style={styles.footerButton}
+                                />
+                            ) : (
+                                <PillButton
+                                    label="Join match"
+                                    disabled={!canJoin}
+                                    loading={submitting}
+                                    onPress={() => runAction(joinMatch)}
+                                    style={styles.footerButton}
+                                />
+                            )}
+                        </View>
+                    </View>
+                )}
             </SafeAreaView>
         </ThemedView>
     );
@@ -220,7 +252,7 @@ const styles = StyleSheet.create({
     content: {
         paddingHorizontal: Spacing.three,
         paddingTop: Spacing.three,
-        paddingBottom: BottomTabInset + Spacing.five,
+        paddingBottom: Spacing.five,
         gap: Spacing.four,
     },
     centered: {
@@ -228,15 +260,14 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    flex: {
+        flex: 1,
+    },
     hero: {
         gap: Spacing.three,
     },
-    heroTop: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
     status: {
+        alignSelf: 'flex-start',
         paddingHorizontal: Spacing.two,
         height: 24,
         justifyContent: 'center',
@@ -249,15 +280,21 @@ const styles = StyleSheet.create({
         fontWeight: 800,
         letterSpacing: 0.6,
     },
+    sportRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.one,
+    },
     heroSport: {
         color: Brand.accent,
-        fontWeight: 700,
+        fontWeight: 800,
     },
     heroWhen: {
         color: Brand.onDark,
         fontSize: 30,
         lineHeight: 38,
-        fontWeight: 700,
+        fontWeight: 800,
+        letterSpacing: -0.6,
     },
     heroMuted: {
         color: Brand.onDarkMuted,
@@ -281,7 +318,7 @@ const styles = StyleSheet.create({
         color: Brand.onDarkMuted,
         fontSize: 11,
         lineHeight: 14,
-        fontWeight: 700,
+        fontWeight: 800,
         letterSpacing: 0.6,
     },
     infoValue: {
@@ -291,23 +328,47 @@ const styles = StyleSheet.create({
     section: {
         gap: Spacing.three,
     },
+    sectionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'baseline',
+    },
     sectionTitle: {
         fontSize: 20,
         lineHeight: 26,
-        fontWeight: 700,
+        fontWeight: 800,
     },
     center: {
         textAlign: 'center',
     },
-    errorBox: {
-        padding: Spacing.three,
-        borderRadius: 14,
-        backgroundColor: 'rgba(214,69,69,0.12)',
+    cancel: {
+        alignSelf: 'center',
+        paddingVertical: Spacing.two,
+    },
+    cancelText: {
+        color: Brand.danger,
+    },
+    footer: {
+        paddingHorizontal: Spacing.three,
+        paddingTop: Spacing.three,
+        paddingBottom: BottomTabInset + Spacing.three,
+        borderTopWidth: 1,
+        gap: Spacing.two,
+    },
+    footerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.three,
+    },
+    footerTitle: {
+        fontSize: 18,
+        lineHeight: 24,
+        fontWeight: 800,
+    },
+    footerButton: {
+        minWidth: 150,
     },
     error: {
         color: Brand.danger,
-    },
-    actions: {
-        gap: Spacing.two,
     },
 });

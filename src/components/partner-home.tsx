@@ -64,7 +64,7 @@ export function PartnerHome() {
                         ListEmptyComponent={
                             !error ? (
                                 <ThemedText themeColor="textSecondary">You have no venues yet.</ThemedText>
-                            ) : null
+                            ) : undefined
                         }
                     />
                 )}
