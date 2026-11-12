@@ -1,6 +1,6 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { cancelMatch, getMatch, joinMatch, leaveMatch } from '@/api/client';
@@ -22,11 +22,15 @@ import { BottomTabInset, Brand, MaxContentWidth, Spacing, TopTabInset } from '@/
 import { useFavorites } from '@/favorites/favorites-context';
 import { useTheme } from '@/hooks/use-theme';
 import { durationMinutes, formatDayTime, formatTime } from '@/utils/format';
+import { ScreenSkeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/feedback/toast-context';
+import { haptic } from '@/utils/haptics';
 
 export default function MatchDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const matchId = Number(id);
     const theme = useTheme();
+    const toast = useToast();
     const { user } = useAuth();
     const { isFavoriteMatch, toggleMatch } = useFavorites();
 
@@ -45,18 +49,21 @@ export default function MatchDetailsScreen() {
 
     // join, leave или cancel → backend-от го враќа ажурираниот натпревар
     const runAction = useCallback(
-        async (action: (matchId: number) => Promise<Match>) => {
+        async (action: (matchId: number) => Promise<Match>, successMessage: string) => {
             setSubmitting(true);
             setError(null);
             try {
                 setMatch(await action(matchId));
+                haptic.success();
+                toast(successMessage);
             } catch (e) {
+                haptic.error();
                 setError(e instanceof Error ? e.message : 'Something went wrong');
             } finally {
                 setSubmitting(false);
             }
         },
-        [matchId],
+        [matchId, toast],
     );
 
     // откажувањето не може да се врати, затоа првиот клик бара потврда
@@ -66,7 +73,7 @@ export default function MatchDetailsScreen() {
             return;
         }
         setConfirmCancel(false);
-        runAction(cancelMatch);
+        runAction(cancelMatch, 'Match cancelled');
     }
 
     function openPlayer(playerId: number) {
@@ -74,11 +81,7 @@ export default function MatchDetailsScreen() {
     }
 
     if (loading) {
-        return (
-            <ThemedView style={styles.centered}>
-                <ActivityIndicator size="large" color={theme.tint} />
-            </ThemedView>
-        );
+        return <ScreenSkeleton />;
     }
 
     if (!match) {
@@ -162,7 +165,7 @@ export default function MatchDetailsScreen() {
                             match={match}
                             currentUserId={user?.id}
                             canJoin={canJoin && !submitting}
-                            onJoin={() => runAction(joinMatch)}
+                            onJoin={() => runAction(joinMatch, "You're in! See you on the field 🎉")}
                             onPlayerPress={openPlayer}
                         />
                         <ThemedText type="small" themeColor="textSecondary" style={styles.center}>
@@ -207,7 +210,7 @@ export default function MatchDetailsScreen() {
                                     label="Leave"
                                     variant="danger"
                                     loading={submitting}
-                                    onPress={() => runAction(leaveMatch)}
+                                    onPress={() => runAction(leaveMatch, 'You left the match')}
                                     style={styles.footerButton}
                                 />
                             ) : (
@@ -215,7 +218,7 @@ export default function MatchDetailsScreen() {
                                     label="Join match"
                                     disabled={!canJoin}
                                     loading={submitting}
-                                    onPress={() => runAction(joinMatch)}
+                                    onPress={() => runAction(joinMatch, "You're in! See you on the field 🎉")}
                                     style={styles.footerButton}
                                 />
                             )}

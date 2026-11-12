@@ -17,6 +17,7 @@ import { AuthScreen } from '@/components/auth-screen';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, Colors } from '@/constants/theme';
 import { FavoritesProvider } from '@/favorites/favorites-context';
+import { ToastProvider } from '@/feedback/toast-context';
 import {NotificationsProvider} from "@/notifications/notifications-context";
 
 SplashScreen.preventAutoHideAsync();
@@ -81,8 +82,10 @@ export default function RootLayout() {
             <FavoritesProvider>
                 <NotificationsProvider>
                     <ThemeProvider value={colorScheme === 'dark' ? DarkNavTheme : LightNavTheme}>
-                        <AnimatedSplashOverlay />
-                        <RootNavigator />
+                        <ToastProvider>
+                            <AnimatedSplashOverlay />
+                            <RootNavigator />
+                        </ToastProvider>
                     </ThemeProvider>
                 </NotificationsProvider>
             </FavoritesProvider>

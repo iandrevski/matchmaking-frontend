@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getPlayerMatches } from '@/api/client';
@@ -16,6 +16,7 @@ import { BottomTabInset, MaxContentWidth, Spacing, TopTabInset } from '@/constan
 import { useTheme } from '@/hooks/use-theme';
 import { formatDayTime } from '@/utils/format';
 import { past } from '@/utils/matches';
+import { ListSkeleton } from '@/components/ui/skeleton';
 
 // „November 2026“ → натпревари од тој месец (листата е веќе од најнов кон најстар)
 function groupByMonth(matches: Match[]) {
@@ -62,7 +63,7 @@ export default function PastMatchesScreen() {
                     />
 
                     {matches === null ? (
-                        <ActivityIndicator size="large" color={theme.tint} style={styles.loader} />
+                        <ListSkeleton rows={4} />
                     ) : matches.length === 0 ? (
                         <EmptyState
                             icon="clock"

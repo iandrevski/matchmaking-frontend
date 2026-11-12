@@ -1,6 +1,6 @@
 import { Link, router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getMatches, getPlayerMatches, getSports } from '@/api/client';
@@ -18,6 +18,7 @@ import { BottomTabInset, Brand, MaxContentWidth, Radius, Spacing, TopTabInset } 
 import { useTheme } from '@/hooks/use-theme';
 import { upcoming } from '@/utils/matches';
 import { IconBadge, SportIcon } from '@/components/ui/icon';
+import { ScreenSkeleton } from '@/components/ui/skeleton';
 
 // различен Home според улогата
 export default function HomeScreen() {
@@ -74,11 +75,7 @@ function PlayerHome() {
   }, [load]);
 
   if (loading) {
-    return (
-      <ThemedView style={styles.centered}>
-        <ActivityIndicator size="large" color={theme.tint} />
-      </ThemedView>
-    );
+    return <ScreenSkeleton variant="home" />;
   }
 
   const nextMatch = myMatches[0];

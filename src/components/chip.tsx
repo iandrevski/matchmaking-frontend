@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Brand, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { haptic } from '@/utils/haptics';
 
 type Props = {
     label: string;
@@ -19,7 +20,10 @@ export function Chip({ label, selected, onPress, disabled, renderIcon }: Props) 
 
     return (
         <Pressable
-            onPress={onPress}
+            onPress={() => {
+                haptic.tap();
+                onPress();
+            }}
             disabled={disabled}
             accessibilityRole="button"
             accessibilityState={{ selected, disabled }}

@@ -1,6 +1,6 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { deleteVenue, getVenue, getVenueMatches } from '@/api/client';
@@ -10,19 +10,28 @@ import { FavoriteButton } from '@/components/favorite-button';
 import { MatchCard } from '@/components/match-card';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Icon, SportIcon } from '@/components/ui/icon';
+import { PillButton } from '@/components/ui/pill-button';
+import { ScreenHeader } from '@/components/ui/screen-header';
+import { SectionTitle } from '@/components/ui/section-title';
+import { ScreenSkeleton } from '@/components/ui/skeleton';
 import { VenueAvailability } from '@/components/venue-availability';
 import { VenueGallery } from '@/components/venue-gallery';
 import { VenueReviews } from '@/components/venue-reviews';
 import { VenueStatsPanel } from '@/components/venue-stats-panel';
-import { BottomTabInset, Brand, MaxContentWidth, Spacing, TopTabInset } from '@/constants/theme';
+import { BottomTabInset, Brand, MaxContentWidth, Radius, Spacing, TopTabInset } from '@/constants/theme';
 import { useFavorites } from '@/favorites/favorites-context';
+import { useToast } from '@/feedback/toast-context';
+import { useTheme } from '@/hooks/use-theme';
 import { formatAddress, formatPrice } from '@/utils/format';
 import { upcoming } from '@/utils/matches';
-import { sportEmoji } from '@/utils/sports';
 
 export default function VenueDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const venueId = Number(id);
+    const theme = useTheme();
+    const toast = useToast();
     const { user } = useAuth();
     const { isFavoriteVenue, toggleVenue } = useFavorites();
 
@@ -46,11 +55,7 @@ export default function VenueDetailsScreen() {
     );
 
     if (loading) {
-        return (
-            <ThemedView style={styles.centered}>
-                <ActivityIndicator size="large" />
-            </ThemedView>
-        );
+        return <ScreenSkeleton />;
     }
 
     if (!venue) {
@@ -68,17 +73,12 @@ export default function VenueDetailsScreen() {
     function openInMaps() {
         if (!venue) return;
         // Google Maps линк: работи на web, Android и iOS
-        Linking.openURL(
-            `https://www.google.com/maps/search/?api=1&query=${venue.latitude},${venue.longitude}`,
-        );
+        Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${venue.latitude},${venue.longitude}`);
     }
 
     function createMatchHere() {
         if (!venue) return;
-        router.push({
-            pathname: '/matches/new',
-            params: { venueId: venue.id, sportId: venue.sports[0]?.id },
-        });
+        router.push({ pathname: '/matches/new', params: { venueId: venue.id, sportId: venue.sports[0]?.id } });
     }
 
     function editVenue() {
@@ -93,11 +93,9 @@ export default function VenueDetailsScreen() {
         }
         try {
             await deleteVenue(venueId);
-            if (router.canGoBack()) {
-                router.back();
-            } else {
-                router.replace('/venues');
-            }
+            toast('Venue deleted');
+            if (router.canGoBack()) router.back();
+            else router.replace('/venues');
         } catch (e) {
             setConfirmDelete(false);
             setError(e instanceof Error ? e.message : 'Something went wrong');
@@ -108,77 +106,69 @@ export default function VenueDetailsScreen() {
         <ThemedView style={styles.container}>
             <SafeAreaView style={styles.safeArea}>
                 <ScrollView contentContainerStyle={styles.content}>
+                    <ScreenHeader
+                        fallback="/venues"
+                        right={
+                            !isPartner && (
+                                <FavoriteButton active={isFavoriteVenue(venue.id)} onToggle={() => toggleVenue(venue.id)} />
+                            )
+                        }
+                    />
+
                     <VenueGallery venue={venue} canEdit={isOwner} onChange={setVenue} />
 
-                    <View>
-                        <View style={styles.titleRow}>
-                            <ThemedText type="subtitle" style={styles.title}>
-                                {venue.name}
+                    {/* име, адреса, цена, спортови */}
+                    <View style={styles.info}>
+                        <ThemedText type="subtitle">{venue.name}</ThemedText>
+                        <View style={styles.addressRow}>
+                            <Icon name="map-pin" size={16} tone="textSecondary" />
+                            <ThemedText themeColor="textSecondary" style={styles.flex}>
+                                {formatAddress(venue)}
                             </ThemedText>
-                            {!isPartner && (
-                                <FavoriteButton active={isFavoriteVenue(venue.id)} onToggle={() => toggleVenue(venue.id)} />
-                            )}
                         </View>
-                        <ThemedText themeColor="textSecondary">📍 {formatAddress(venue)}</ThemedText>
-                        <ThemedText type="smallBold">💰 {formatPrice(venue.pricePerHour)}</ThemedText>
-                    </View>
-
-                    <View style={styles.sports}>
-                        {venue.sports.map((sport) => (
-                            <ThemedView key={sport.id} type="backgroundElement" style={styles.pill}>
-                                <ThemedText type="small">
-                                    {sportEmoji(sport.name)} {sport.name}
+                        <View style={styles.pills}>
+                            <View style={[styles.pill, { backgroundColor: theme.tintSoft }]}>
+                                <Icon name="tag" size={14} tone="tint" />
+                                <ThemedText style={[styles.pillText, { color: theme.tint }]}>
+                                    {formatPrice(venue.pricePerHour)}
                                 </ThemedText>
-                            </ThemedView>
-                        ))}
+                            </View>
+                            {venue.sports.map((sport) => (
+                                <View key={sport.id} style={[styles.pill, styles.pillOutline, { borderColor: theme.border }]}>
+                                    <SportIcon sport={sport.name} size={15} color={theme.tint} />
+                                    <ThemedText style={styles.pillText}>{sport.name}</ThemedText>
+                                </View>
+                            ))}
+                        </View>
                     </View>
 
+                    {/* акции */}
                     <View style={styles.actions}>
-                        {!isPartner && (
-                            <Pressable
-                                onPress={createMatchHere}
-                                style={({ pressed }) => [styles.button, styles.buttonPrimary, pressed && styles.pressed]}>
-                                <ThemedText style={styles.buttonText}>+ Create match here</ThemedText>
-                            </Pressable>
-                        )}
+                        {!isPartner && <PillButton label="Create match here" icon="plus" onPress={createMatchHere} />}
+                        {hasLocation && <PillButton label="Open in Maps" icon="navigation" variant="soft" onPress={openInMaps} />}
+                        {isOwner && <PillButton label="Edit venue" icon="edit-2" variant="outline" onPress={editVenue} />}
                         {isOwner && (
-                            <Pressable
-                                onPress={editVenue}
-                                style={({ pressed }) => [styles.button, styles.buttonPrimary, pressed && styles.pressed]}>
-                                <ThemedText style={styles.buttonText}>Edit venue</ThemedText>
-                            </Pressable>
-                        )}
-                        {isOwner && (
-                            <Pressable
-                                onPress={onDelete}
-                                style={({ pressed }) => [styles.button, styles.buttonDanger, pressed && styles.pressed]}>
-                                <ThemedText style={styles.buttonText}>
-                                    {confirmDelete ? 'Tap again to delete' : 'Delete venue'}
+                            <Pressable onPress={onDelete} style={styles.delete} hitSlop={8}>
+                                <ThemedText type="smallBold" style={styles.deleteText}>
+                                    {confirmDelete ? 'Tap again to delete this venue' : 'Delete venue'}
                                 </ThemedText>
-                            </Pressable>
-                        )}
-                        {hasLocation && (
-                            <Pressable
-                                onPress={openInMaps}
-                                style={({ pressed }) => [styles.button, pressed && styles.pressed]}>
-                                <ThemedView type="backgroundElement" style={styles.buttonInner}>
-                                    <ThemedText>🗺️ Open in Maps</ThemedText>
-                                </ThemedView>
                             </Pressable>
                         )}
                     </View>
 
-                    {error && <ThemedText style={styles.error}>{error}</ThemedText>}
+                    {error && <ThemedText type="small" style={styles.error}>{error}</ThemedText>}
 
                     {isOwner && <VenueStatsPanel venueId={venue.id} />}
                     <VenueAvailability venue={venue} canBook={!isPartner} />
 
                     <View style={styles.section}>
-                        <ThemedText type="smallBold">Upcoming matches</ThemedText>
+                        <SectionTitle>Upcoming matches</SectionTitle>
                         {matches.length === 0 ? (
-                            <ThemedText type="small" themeColor="textSecondary">
-                                No upcoming matches here yet.
-                            </ThemedText>
+                            <EmptyState
+                                icon="calendar"
+                                title="No upcoming matches here"
+                                text={isPartner ? undefined : 'Be the first to book a slot.'}
+                            />
                         ) : (
                             matches.map((m) => <MatchCard key={m.id} match={m} linked={!isPartner} />)
                         )}
@@ -208,61 +198,58 @@ const styles = StyleSheet.create({
         paddingTop: TopTabInset,
     },
     content: {
-        paddingHorizontal: Spacing.four,
-        paddingTop: Spacing.four,
+        paddingHorizontal: Spacing.three,
+        paddingTop: Spacing.three,
         paddingBottom: BottomTabInset + Spacing.five,
         gap: Spacing.four,
     },
-    titleRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        gap: Spacing.two,
-    },
-    title: {
+    flex: {
         flex: 1,
     },
-    sports: {
+    info: {
+        gap: Spacing.two,
+    },
+    addressRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.one,
+    },
+    pills: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         gap: Spacing.two,
+        marginTop: Spacing.one,
     },
     pill: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: Spacing.one,
+        height: 32,
         paddingHorizontal: Spacing.three,
-        paddingVertical: Spacing.one,
-        borderRadius: Spacing.three,
+        borderRadius: Radius.pill,
+    },
+    pillOutline: {
+        borderWidth: 1,
+    },
+    pillText: {
+        fontSize: 13,
+        lineHeight: 18,
+        fontWeight: 700,
     },
     actions: {
         gap: Spacing.two,
     },
-    button: {
-        borderRadius: Spacing.three,
-        overflow: 'hidden',
+    delete: {
+        alignSelf: 'center',
+        paddingVertical: Spacing.two,
     },
-    buttonPrimary: {
-        backgroundColor: Brand.primary,
-        paddingVertical: Spacing.three,
-        alignItems: 'center',
-    },
-    buttonDanger: {
-        backgroundColor: '#e5484d',
-        paddingVertical: Spacing.three,
-        alignItems: 'center',
-    },
-    buttonInner: {
-        paddingVertical: Spacing.three,
-        alignItems: 'center',
-    },
-    buttonText: {
-        color: '#ffffff',
-    },
-    pressed: {
-        opacity: 0.8,
+    deleteText: {
+        color: Brand.danger,
     },
     section: {
-        gap: Spacing.two,
+        gap: Spacing.three,
     },
     error: {
-        color: '#e5484d',
+        color: Brand.danger,
     },
 });

@@ -1,6 +1,6 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getMyProfile, getPlayerMatches, getPlayerReviewSummary, updateMyProfile } from '@/api/client';
@@ -26,6 +26,9 @@ import { useTheme } from '@/hooks/use-theme';
 import { formatDayTime } from '@/utils/format';
 import { past } from '@/utils/matches';
 import { REVIEW_TAG_LABELS } from '@/utils/review-tags';
+import { ScreenSkeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/feedback/toast-context';
+import { haptic } from '@/utils/haptics';
 
 // "" → null, "180,5" → 180.5, невалиден текст → NaN
 function toNumber(text: string) {
@@ -41,6 +44,7 @@ export default function ProfileScreen() {
     const { user, logout } = useAuth();
     const favorites = useFavorites();
     const theme = useTheme();
+    const toast = useToast();
 
     const [profile, setProfile] = useState<Player | null>(null);
     const [pastMatches, setPastMatches] = useState<Match[]>([]);
@@ -107,6 +111,8 @@ export default function ProfileScreen() {
             });
             setProfile(updated);
             setEditing(false);
+            haptic.success();
+            toast('Profile updated');
         } catch (e) {
             setError(e instanceof Error ? e.message : 'Something went wrong');
         } finally {
@@ -115,11 +121,7 @@ export default function ProfileScreen() {
     }
 
     if (loading || !user) {
-        return (
-            <ThemedView style={styles.centered}>
-                <ActivityIndicator size="large" color={theme.tint} />
-            </ThemedView>
-        );
+        return <ScreenSkeleton />;
     }
 
     const rating = summary?.averageStars ?? null;

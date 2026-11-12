@@ -1,8 +1,11 @@
+import { Feather } from '@expo/vector-icons';
 import { ActivityIndicator, Pressable, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
+import type { IconName } from '@/components/ui/icon';
 import { Brand, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { haptic } from '@/utils/haptics';
 
 export type PillVariant = 'primary' | 'accent' | 'soft' | 'outline' | 'outlineLight' | 'danger';
 
@@ -11,13 +14,14 @@ type Props = {
   onPress: () => void;
   variant?: PillVariant;
   size?: 'md' | 'sm';
+  icon?: IconName;
   loading?: boolean;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
 // заоблено копче во облик на пилула; една компонента за сите копчиња
-export function PillButton({ label, onPress, variant = 'primary', size = 'md', loading, disabled, style }: Props) {
+export function PillButton({ label, onPress, variant = 'primary', size = 'md', icon, loading, disabled, style }: Props) {
   const theme = useTheme();
   const inactive = disabled || loading;
 
@@ -31,11 +35,17 @@ export function PillButton({ label, onPress, variant = 'primary', size = 'md', l
   };
   const { bg, fg, border } = look[variant];
 
+  function press() {
+    haptic.tap();
+    onPress();
+  }
+
   return (
     <Pressable
-      onPress={onPress}
+      onPress={press}
       disabled={inactive}
       accessibilityRole="button"
+      accessibilityState={{ disabled: !!inactive, busy: !!loading }}
       style={({ pressed }) => [
         styles.base,
         size === 'sm' ? styles.sm : styles.md,
@@ -48,9 +58,12 @@ export function PillButton({ label, onPress, variant = 'primary', size = 'md', l
       {loading ? (
         <ActivityIndicator color={fg} />
       ) : (
-        <ThemedText style={[styles.label, size === 'sm' && styles.labelSm, { color: fg }]} numberOfLines={1}>
-          {label}
-        </ThemedText>
+        <>
+          {icon && <Feather name={icon} size={size === 'sm' ? 15 : 18} color={fg} />}
+          <ThemedText style={[styles.label, size === 'sm' && styles.labelSm, { color: fg }]} numberOfLines={1}>
+            {label}
+          </ThemedText>
+        </>
       )}
     </Pressable>
   );
@@ -62,6 +75,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
+    gap: Spacing.two,
   },
   md: {
     height: 50,

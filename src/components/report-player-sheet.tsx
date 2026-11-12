@@ -19,6 +19,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Brand, FontFamily, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { haptic } from '@/utils/haptics';
 
 type ReasonOption = { value: ReportReason; emoji: string; label: string; placeholder: string };
 
@@ -71,6 +72,7 @@ export function ReportPlayerSheet({ visible, onClose, playerId, username, matchI
         matchId: matchId ?? null,
       });
       setSent(true);
+      haptic.success();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong. Please try again.');
     } finally {

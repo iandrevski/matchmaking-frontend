@@ -8,6 +8,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Brand, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { sportEmoji } from '@/utils/sports';
+import { SectionTitle } from '@/components/ui/section-title';
 
 const ACCENT = Brand.primary;
 const CHART_HEIGHT = 96;
@@ -31,7 +32,7 @@ export function VenueStatsPanel({ venueId }: { venueId: number }) {
 
     return (
         <View style={styles.section}>
-            <ThemedText type="smallBold">Insights</ThemedText>
+            <SectionTitle>Insights</SectionTitle>
 
             {stats.totalMatches === 0 ? (
                 <ThemedText type="small" themeColor="textSecondary">
